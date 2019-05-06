@@ -118,6 +118,7 @@ class SimpleLeakAwareByteBuf extends WrappedByteBuf {
     private void closeLeak() {
         // Close the ResourceLeakTracker with the tracked ByteBuf as argument. This must be the same that was used when
         // calling DefaultResourceLeak.track(...).
+        // 使用跟踪的ByteBuf作为参数关闭ResourceLeakTracker。 这必须与调用DefaultResourceLeak.track（...）时使用的相同。
         boolean closed = leak.close(trackedByteBuf);
         assert closed;
     }

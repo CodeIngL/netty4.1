@@ -29,14 +29,21 @@ import java.nio.ByteBuffer;
 
 final class PoolChunkList<T> implements PoolChunkListMetric {
     private static final Iterator<PoolChunkMetric> EMPTY_METRICS = Collections.<PoolChunkMetric>emptyList().iterator();
+    //所属的arena
     private final PoolArena<T> arena;
+    //下一个chunkList
     private final PoolChunkList<T> nextList;
+    //最小使用量
     private final int minUsage;
+    //最大使用量
     private final int maxUsage;
+    //最大容量
     private final int maxCapacity;
+    //连边
     private PoolChunk<T> head;
 
     // This is only update once when create the linked like list of PoolChunkList in PoolArena constructor.
+    // 在PoolArena构造函数中创建PoolChunkList的链接列表时，这只会更新一次
     private PoolChunkList<T> prevList;
 
     // TODO: Test if adding padding helps under contention
@@ -54,12 +61,16 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
     /**
      * Calculates the maximum capacity of a buffer that will ever be possible to allocate out of the {@link PoolChunk}s
      * that belong to the {@link PoolChunkList} with the given {@code minUsage} and {@code maxUsage} settings.
+     * <p>
+     * 使用给定的{@code minUsage}和{@code maxUsage}设置计算可以从属于{@link PoolChunkList} 的 {@link PoolChunk}中分配的缓冲区的最大容量。
+     * </p>
      */
     private static int calculateMaxCapacity(int minUsage, int chunkSize) {
         minUsage = minUsage0(minUsage);
 
         if (minUsage == 100) {
             // If the minUsage is 100 we can not allocate anything out of this list.
+            // 如果minUsage为100，我们无法从此列表中分配任何内容。
             return 0;
         }
 
@@ -68,7 +79,11 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         // As an example:
         // - If a PoolChunkList has minUsage == 25 we are allowed to allocate at most 75% of the chunkSize because
         //   this is the maximum amount available in any PoolChunk in this PoolChunkList.
-        return  (int) (chunkSize * (100L - minUsage) / 100L);
+        // 计算可从此PoolChunkList中的PoolChunk分配的最大字节数。
+        // 
+        // 举个例子：
+        // - 如果PoolChunkList的minUsage==25，我们可以分配最多75％的chunkSize，因为这是此PoolChunkList中任何PoolChunk中可用的最大数量
+        return (int) (chunkSize * (100L - minUsage) / 100L);
     }
 
     void prevList(PoolChunkList<T> prevList) {
@@ -76,22 +91,31 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         this.prevList = prevList;
     }
 
+
+    /**
+     * 分配
+     *
+     * @param buf
+     * @param reqCapacity
+     * @param normCapacity
+     * @return
+     */
     boolean allocate(PooledByteBuf<T> buf, int reqCapacity, int normCapacity) {
+        // 此PoolChunkList为空，或者请求的容量大于此PoolChunkList中包含的PoolChunks可以处理的容量。
         if (normCapacity > maxCapacity) {
-            // Either this PoolChunkList is empty or the requested capacity is larger then the capacity which can
-            // be handled by the PoolChunks that are contained in this PoolChunkList.
             return false;
         }
 
-        for (PoolChunk<T> cur = head; cur != null; cur = cur.next) {
-            if (cur.allocate(buf, reqCapacity, normCapacity)) {
-                if (cur.usage() >= maxUsage) {
-                    remove(cur);
-                    nextList.add(cur);
+        for (PoolChunk<T> cur = head; cur != null; cur = cur.next) { //从头遍历到尾
+            if (cur.allocate(buf, reqCapacity, normCapacity)) { //分配成功
+                if (cur.usage() >= maxUsage) { //使用量大于最大使用量
+                    remove(cur); //删除
+                    nextList.add(cur); //加回来
                 }
                 return true;
             }
         }
+        //PoolChunkList为空直接返回
         return false;
     }
 
@@ -132,7 +156,12 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         return prevList.move(chunk);
     }
 
+    /**
+     * 添加到chunk
+     * @param chunk
+     */
     void add(PoolChunk<T> chunk) {
+        //当块的使用情况大于最大的使用率，进行迁移，迁移到上方
         if (chunk.usage() >= maxUsage) {
             nextList.add(chunk);
             return;
@@ -142,6 +171,9 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
 
     /**
      * Adds the {@link PoolChunk} to this {@link PoolChunkList}.
+     * <p>
+     *     将{@link PoolChunk}添加到此{@link PoolChunkList}。
+     * </p>
      */
     void add0(PoolChunk<T> chunk) {
         chunk.parent = this;
@@ -193,7 +225,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
                 return EMPTY_METRICS;
             }
             List<PoolChunkMetric> metrics = new ArrayList<PoolChunkMetric>();
-            for (PoolChunk<T> cur = head;;) {
+            for (PoolChunk<T> cur = head; ; ) {
                 metrics.add(cur);
                 cur = cur.next;
                 if (cur == null) {
@@ -212,7 +244,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
                 return "none";
             }
 
-            for (PoolChunk<T> cur = head;;) {
+            for (PoolChunk<T> cur = head; ; ) {
                 buf.append(cur);
                 cur = cur.next;
                 if (cur == null) {

@@ -31,10 +31,17 @@ import java.nio.charset.Charset;
 
 /**
  * Wraps another {@link ByteBuf}.
- *
+ * <p>
  * It's important that the {@link #readerIndex()} and {@link #writerIndex()} will not do any adjustments on the
  * indices on the fly because of internal optimizations made by {@link ByteBufUtil#writeAscii(ByteBuf, CharSequence)}
  * and {@link ByteBufUtil#writeUtf8(ByteBuf, CharSequence)}.
+ * <p>
+ * 包装另一个 {@link ByteBuf}。
+ * </p>
+ * <p>
+ * 由于{@link ByteBufUtil#writeAscii(ByteBuf, CharSequence)}和{@link ByteBufUtil#writeUtf8(ByteBuf, CharSequence)}的内部优化，
+ * {@link #readerIndex()}和{@link #writerIndex()} 不会对动态的索引进行任何调整，这一点很重要。
+ * </p>
  */
 class WrappedByteBuf extends ByteBuf {
 

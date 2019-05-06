@@ -42,6 +42,16 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         this.recyclerHandle = (Handle<PooledByteBuf<T>>) recyclerHandle;
     }
 
+    /**
+     * 初始化
+     * @param chunk 由那个chunk分配
+     * @param nioBuffer
+     * @param handle
+     * @param offset
+     * @param length
+     * @param maxLength
+     * @param cache
+     */
     void init(PoolChunk<T> chunk, ByteBuffer nioBuffer,
               long handle, int offset, int length, int maxLength, PoolThreadCache cache) {
         init0(chunk, nioBuffer, handle, offset, length, maxLength, cache);
@@ -51,6 +61,16 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         init0(chunk, null, 0, chunk.offset, length, length, null);
     }
 
+    /**
+     * 初始化
+     * @param chunk
+     * @param nioBuffer
+     * @param handle
+     * @param offset
+     * @param length
+     * @param maxLength
+     * @param cache
+     */
     private void init0(PoolChunk<T> chunk, ByteBuffer nioBuffer,
                        long handle, int offset, int length, int maxLength, PoolThreadCache cache) {
         assert handle >= 0;
@@ -58,10 +78,14 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
 
         this.chunk = chunk;
         memory = chunk.memory;
+        //临时的buf
         tmpNioBuf = nioBuffer;
         allocator = chunk.arena.parent;
+        //缓存
         this.cache = cache;
+        //句柄
         this.handle = handle;
+        //偏移量
         this.offset = offset;
         this.length = length;
         this.maxLength = maxLength;
@@ -69,6 +93,8 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
 
     /**
      * Method must be called before reuse this {@link PooledByteBufAllocator}
+     * <p>
+     *     必须在重用{@link PooledByteBufAllocator}之前调用方法
      */
     final void reuse(int maxCapacity) {
         maxCapacity(maxCapacity);
@@ -87,19 +113,20 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         checkNewCapacity(newCapacity);
 
         // If the request capacity does not require reallocation, just update the length of the memory.
+        // 如果请求容量不需要重新分配，只需更新内存的长度即可。
         if (chunk.unpooled) {
             if (newCapacity == length) {
                 return this;
             }
         } else {
-            if (newCapacity > length) {
+            if (newCapacity > length) {//新容量大于length小于最大值，直接返回this就可以
                 if (newCapacity <= maxLength) {
                     length = newCapacity;
                     return this;
                 }
-            } else if (newCapacity < length) {
-                if (newCapacity > maxLength >>> 1) {
-                    if (maxLength <= 512) {
+            } else if (newCapacity < length) {//新容量小于length
+                if (newCapacity > maxLength >>> 1) {//新容量大于maxlength/2
+                    if (maxLength <= 512) { //小于512
                         if (newCapacity > maxLength - 16) {
                             length = newCapacity;
                             setIndex(Math.min(readerIndex(), newCapacity), Math.min(writerIndex(), newCapacity));
@@ -111,12 +138,13 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
                         return this;
                     }
                 }
-            } else {
+            } else { //等于，直接返回this
                 return this;
             }
         }
 
         // Reallocation required.
+        // 需要重新分配。
         chunk.arena.reallocate(this, newCapacity, true);
         return this;
     }

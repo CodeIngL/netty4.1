@@ -50,6 +50,8 @@ import static io.netty.util.internal.StringUtil.isSurrogate;
 /**
  * A collection of utility methods that is related with handling {@link ByteBuf},
  * such as the generation of hex dump and swapping an integer's byte order.
+ * <P>
+ *     与处理{@link ByteBuf}相关的实用程序方法的集合，例如生成十六进制转储和交换整数的字节顺序。
  */
 public final class ByteBufUtil {
 
@@ -70,28 +72,36 @@ public final class ByteBufUtil {
     static final int WRITE_CHUNK_SIZE = 8192;
     static final ByteBufAllocator DEFAULT_ALLOCATOR;
 
+    /**
+     * 加载设置
+     */
     static {
+        //分配类型
         String allocType = SystemPropertyUtil.get(
                 "io.netty.allocator.type", PlatformDependent.isAndroid() ? "unpooled" : "pooled");
         allocType = allocType.toLowerCase(Locale.US).trim();
 
         ByteBufAllocator alloc;
+        //unpooled类型
         if ("unpooled".equals(allocType)) {
             alloc = UnpooledByteBufAllocator.DEFAULT;
             logger.debug("-Dio.netty.allocator.type: {}", allocType);
-        } else if ("pooled".equals(allocType)) {
+        } else if ("pooled".equals(allocType)) { //pooled类型
             alloc = PooledByteBufAllocator.DEFAULT;
             logger.debug("-Dio.netty.allocator.type: {}", allocType);
-        } else {
+        } else { //默认是pooled类型
             alloc = PooledByteBufAllocator.DEFAULT;
             logger.debug("-Dio.netty.allocator.type: pooled (unknown: {})", allocType);
         }
 
+        //使用的分配类型
         DEFAULT_ALLOCATOR = alloc;
 
+        //threadLocalDirectBufferSize大小
         THREAD_LOCAL_BUFFER_SIZE = SystemPropertyUtil.getInt("io.netty.threadLocalDirectBufferSize", 0);
         logger.debug("-Dio.netty.threadLocalDirectBufferSize: {}", THREAD_LOCAL_BUFFER_SIZE);
 
+        //maxThreadLocalCharBufferSize大小
         MAX_CHAR_BUFFER_SIZE = SystemPropertyUtil.getInt("io.netty.maxThreadLocalCharBufferSize", 16 * 1024);
         logger.debug("-Dio.netty.maxThreadLocalCharBufferSize: {}", MAX_CHAR_BUFFER_SIZE);
     }

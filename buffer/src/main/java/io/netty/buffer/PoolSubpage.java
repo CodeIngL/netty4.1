@@ -16,11 +16,17 @@
 
 package io.netty.buffer;
 
+/**
+ * 池化的子页
+ *
+ * @param <T>
+ */
 final class PoolSubpage<T> implements PoolSubpageMetric {
 
     final PoolChunk<T> chunk;
     private final int memoryMapIdx;
     private final int runOffset;
+    //页大小
     private final int pageSize;
     private final long[] bitmap;
 
@@ -37,7 +43,10 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
     // TODO: Test if adding padding helps under contention
     //private long pad0, pad1, pad2, pad3, pad4, pad5, pad6, pad7;
 
-    /** Special constructor that creates a linked list head */
+    /**
+     * Special constructor that creates a linked list head
+     * 创建链表头的特殊构造函数
+     */
     PoolSubpage(int pageSize) {
         chunk = null;
         memoryMapIdx = -1;
@@ -47,35 +56,74 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         bitmap = null;
     }
 
+    /**
+     * 构建一个子页面
+     *
+     * @param head
+     * @param chunk
+     * @param memoryMapIdx
+     * @param runOffset
+     * @param pageSize
+     * @param elemSize
+     */
     PoolSubpage(PoolSubpage<T> head, PoolChunk<T> chunk, int memoryMapIdx, int runOffset, int pageSize, int elemSize) {
+        //所在的chunk
         this.chunk = chunk;
+        //对应的memoryMapIdx
         this.memoryMapIdx = memoryMapIdx;
+        //在内存数据中的起始偏移量
         this.runOffset = runOffset;
+        //页大小
         this.pageSize = pageSize;
-        bitmap = new long[pageSize >>> 10]; // pageSize / 16 / 64
+        // 使用了一个bitmap来记录一个page的分配情况，这个bitmap数组默认size为8，因为我们最小的分配内存是16，
+        // 所以一个page最多可以被分成512个小段，而一个long可以描述64位位图信息，
+        // 所以只需要8个long就可以进行内存管理描述了。
+        bitmap = new long[pageSize >>> 10]; // pageSize / 16 / 64 = pagesSize/2^10
         init(head, elemSize);
     }
 
+    /**
+     * 比如当前申请16大小的内存，
+     * maxNumElems=numAvail=512,
+     * 说明一个page被拆成了512个内存段，
+     * bitmaplength=512／64=8，
+     * 然后将当前PoolSubpage加入到链表中。
+     *
+     * @param head
+     * @param elemSize 申请的容量
+     */
     void init(PoolSubpage<T> head, int elemSize) {
-        doNotDestroy = true;
-        this.elemSize = elemSize;
+        doNotDestroy = true; //没有被销毁
+        this.elemSize = elemSize; //分配的大小
         if (elemSize != 0) {
-            maxNumElems = numAvail = pageSize / elemSize;
+            maxNumElems = numAvail = pageSize / elemSize; //最大的数量和可用的数量
             nextAvail = 0;
-            bitmapLength = maxNumElems >>> 6;
-            if ((maxNumElems & 63) != 0) {
-                bitmapLength ++;
+            bitmapLength = maxNumElems >>> 6; //需要几个bit来标识
+            if ((maxNumElems & 63) != 0) { //如果有多，需要一个额外得long
+                bitmapLength++;
             }
 
-            for (int i = 0; i < bitmapLength; i ++) {
+            for (int i = 0; i < bitmapLength; i++) {//全部初始化，因此全部置0
                 bitmap[i] = 0;
             }
         }
+        //添加到槽位的链表中
         addToPool(head);
     }
 
     /**
      * Returns the bitmap index of the subpage allocation.
+     * <p>
+     * 返回子页面分配的位图索引
+     * <p>
+     * a，方法getNextAvail找到当前page中可分配内存段的bitmapIdx，初始时这个值为0
+     * </p>
+     * <p>
+     * b，q=bitmapIdx/64,确认long数组的位置，
+     * </p>
+     * <p>
+     * c，bitmapIdx＆63确定long的bit位置，然后将该位置值为1
+     * </p>
      */
     long allocate() {
         if (elemSize == 0) {
@@ -92,7 +140,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         assert (bitmap[q] >>> r & 1) == 0;
         bitmap[q] |= 1L << r;
 
-        if (-- numAvail == 0) {
+        if (--numAvail == 0) { //没有可用的，移走
             removeFromPool();
         }
 
@@ -101,7 +149,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
 
     /**
      * @return {@code true} if this subpage is in use.
-     *         {@code false} if this subpage is not used by its chunk and thus it's OK to be released.
+     * {@code false} if this subpage is not used by its chunk and thus it's OK to be released.
      */
     boolean free(PoolSubpage<T> head, int bitmapIdx) {
         if (elemSize == 0) {
@@ -114,7 +162,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
 
         setNextAvail(bitmapIdx);
 
-        if (numAvail ++ == 0) {
+        if (numAvail++ == 0) {
             addToPool(head);
             return true;
         }
@@ -167,7 +215,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
     private int findNextAvail() {
         final long[] bitmap = this.bitmap;
         final int bitmapLength = this.bitmapLength;
-        for (int i = 0; i < bitmapLength; i ++) {
+        for (int i = 0; i < bitmapLength; i++) {
             long bits = bitmap[i];
             if (~bits != 0) {
                 return findNextAvail0(i, bits);
@@ -180,7 +228,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         final int maxNumElems = this.maxNumElems;
         final int baseVal = i << 6;
 
-        for (int j = 0; j < 64; j ++) {
+        for (int j = 0; j < 64; j++) {
             if ((bits & 1) == 0) {
                 int val = baseVal | j;
                 if (val < maxNumElems) {

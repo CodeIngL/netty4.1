@@ -22,6 +22,9 @@ import io.netty.util.internal.ReferenceCountUpdater;
 
 /**
  * Abstract base class for {@link ByteBuf} implementations that count references.
+ * <p>
+ *     用于计算引用的{@link ByteBuf}实现的抽象基类
+ * </p>
  */
 public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
     private static final long REFCNT_FIELD_OFFSET =

@@ -19,6 +19,9 @@ import io.netty.util.Recycler;
 import io.netty.util.Recycler.Handle;
 import io.netty.util.internal.PlatformDependent;
 
+/**
+ * 池化的使用Unsafe类的堆内HeapByteBuf
+ */
 final class PooledUnsafeHeapByteBuf extends PooledHeapByteBuf {
 
     private static final Recycler<PooledUnsafeHeapByteBuf> RECYCLER = new Recycler<PooledUnsafeHeapByteBuf>() {
@@ -29,7 +32,8 @@ final class PooledUnsafeHeapByteBuf extends PooledHeapByteBuf {
     };
 
     static PooledUnsafeHeapByteBuf newUnsafeInstance(int maxCapacity) {
-        PooledUnsafeHeapByteBuf buf = RECYCLER.get();
+        PooledUnsafeHeapByteBuf buf = RECYCLER.get(); //使用一个recycler获得
+        //重用
         buf.reuse(maxCapacity);
         return buf;
     }

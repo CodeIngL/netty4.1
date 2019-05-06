@@ -25,26 +25,41 @@ import io.netty.util.internal.StringUtil;
 
 /**
  * Skeletal {@link ByteBufAllocator} implementation to extend.
+ * <p>
+ *     Skeletal {@link ByteBufAllocator}实现扩展。
+ * </p>
  */
 public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
+    //初始化容量大小
     static final int DEFAULT_INITIAL_CAPACITY = 256;
+    //最大容量大小
     static final int DEFAULT_MAX_CAPACITY = Integer.MAX_VALUE;
+    //最大组合数
     static final int DEFAULT_MAX_COMPONENTS = 16;
+    //计算的阈值
     static final int CALCULATE_THRESHOLD = 1048576 * 4; // 4 MiB page
 
     static {
         ResourceLeakDetector.addExclusions(AbstractByteBufAllocator.class, "toLeakAwareBuffer");
     }
 
+    /**
+     * 感知泄漏缓冲区
+     * @param buf
+     * @return
+     */
     protected static ByteBuf toLeakAwareBuffer(ByteBuf buf) {
         ResourceLeakTracker<ByteBuf> leak;
+        //级别
         switch (ResourceLeakDetector.getLevel()) {
+            //简单的
             case SIMPLE:
                 leak = AbstractByteBuf.leakDetector.track(buf);
                 if (leak != null) {
                     buf = new SimpleLeakAwareByteBuf(buf, leak);
                 }
                 break;
+                //高级的
             case ADVANCED:
             case PARANOID:
                 leak = AbstractByteBuf.leakDetector.track(buf);
@@ -58,6 +73,11 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         return buf;
     }
 
+    /**
+     * 感知泄漏组合的缓冲区
+     * @param buf
+     * @return
+     */
     protected static CompositeByteBuf toLeakAwareBuffer(CompositeByteBuf buf) {
         ResourceLeakTracker<ByteBuf> leak;
         switch (ResourceLeakDetector.getLevel()) {
@@ -80,6 +100,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         return buf;
     }
 
+    //是否使用直接内存，偏向内存设置true且存在unsafe
     private final boolean directByDefault;
     private final ByteBuf emptyBuf;
 
@@ -133,19 +154,34 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         return heapBuffer(DEFAULT_INITIAL_CAPACITY);
     }
 
+    /**
+     * 分配一个byteBuffer
+     * @param initialCapacity 容量
+     * @return
+     */
     @Override
     public ByteBuf ioBuffer(int initialCapacity) {
         if (PlatformDependent.hasUnsafe()) {
+            //直接内存
             return directBuffer(initialCapacity);
         }
+        //堆内存
         return heapBuffer(initialCapacity);
     }
 
+    /**
+     * 分配一个byteBuffer
+     * @param initialCapacity 容量
+     * @param maxCapacity 最大容量
+     * @return
+     */
     @Override
     public ByteBuf ioBuffer(int initialCapacity, int maxCapacity) {
         if (PlatformDependent.hasUnsafe()) {
+            //直接内存
             return directBuffer(initialCapacity, maxCapacity);
         }
+        //堆内存
         return heapBuffer(initialCapacity, maxCapacity);
     }
 
@@ -168,22 +204,43 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         return newHeapBuffer(initialCapacity, maxCapacity);
     }
 
+    /**
+     * 分配直接内存，初始容量256，最大值2147483647
+     * @see #directBuffer(int, int)
+     * @return
+     */
     @Override
     public ByteBuf directBuffer() {
         return directBuffer(DEFAULT_INITIAL_CAPACITY, DEFAULT_MAX_CAPACITY);
     }
 
+    /**
+     * 分配直接内存，初始容量参数，最大值2147483647
+     * @see #directBuffer(int, int)
+     * @param #initialCapacity
+     * @return
+     */
     @Override
     public ByteBuf directBuffer(int initialCapacity) {
         return directBuffer(initialCapacity, DEFAULT_MAX_CAPACITY);
     }
 
+    /**
+     * 指定参数分配直接内存
+     * @see #directBuffer(int, int)
+     * @param #initialCapacity 初始容量
+     * @param #maxCapacity 最大容量
+     * @return
+     */
     @Override
     public ByteBuf directBuffer(int initialCapacity, int maxCapacity) {
+        //校验参数
         if (initialCapacity == 0 && maxCapacity == 0) {
             return emptyBuf;
         }
+        //校验
         validate(initialCapacity, maxCapacity);
+        //分配直接内存
         return newDirectBuffer(initialCapacity, maxCapacity);
     }
 
