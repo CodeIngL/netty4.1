@@ -45,6 +45,7 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
     };
 
     // Value might not equal "real" reference count, all access should be via the updater
+    // 值可能不等于“真实”引用计数，所有访问都应该通过更新程序
     @SuppressWarnings("unused")
     private volatile int refCnt = updater.initialValue();
 

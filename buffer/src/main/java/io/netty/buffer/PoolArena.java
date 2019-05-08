@@ -54,7 +54,10 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     final int chunkSize; //默认8192*2^11（16M）
     final int subpageOverflowMask; //~(pageSize - 1)
     final int numSmallSubpagePools; //pageShifts - 9默认4
+    //针对的是容量大运一个chunk的请求。默认是0
+    //本地大容量的填充，我们最好使用规格化的方式进行，比如填充，而不是假设我们申请16M1B，底层我们应该使用多大的空间呢。
     final int directMemoryCacheAlignment;
+    //填充的掩码值
     final int directMemoryCacheAlignmentMask;
     //使用的tiny子页
     private final PoolSubpage<T>[] tinySubpagePools;

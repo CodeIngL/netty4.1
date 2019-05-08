@@ -437,8 +437,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * than the current capacity, the buffer is appended with unspecified data whose length is
      * {@code (newCapacity - currentCapacity)}.
      * <p>
-     *     调整此缓冲区的容量。 如果{@code newCapacity}小于当前容量，则会截断此缓冲区的内容。
-     *     如果{@code newCapacity}大于当前容量，则缓冲区将附加长度为{@code (newCapacity - currentCapacity)}的未指定数据
+     * 调整此缓冲区的容量。 如果{@code newCapacity}小于当前容量，则会截断此缓冲区的内容。
+     * 如果{@code newCapacity}大于当前容量，则缓冲区将附加长度为{@code (newCapacity - currentCapacity)}的未指定数据
      *
      * @throws IllegalArgumentException if the {@code newCapacity} is greater than {@link #maxCapacity()}
      */
@@ -2195,6 +2195,13 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * <p>
      * Also be aware that this method will NOT call {@link #retain()} and so the
      * reference count will NOT be increased.
+     * <p>
+     *     返回此缓冲区可读字节的片段。 修改返回的缓冲区或此缓冲区的内容会影响彼此的内容，同时它们会维护单独的索引和标记。
+     *     此方法与{@code buf.slice(buf.readerIndex(), buf.readableBytes())}相同。 此方法不会修改此缓冲区的{@code readerIndex}或{@code writerIndex}。
+     * </p>
+     * <p>
+     * 另请注意，此方法不会调用retain{@link #retain()}，因此不会增加引用计数
+     * </p>
      */
     public abstract ByteBuf slice();
 
@@ -2246,6 +2253,13 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * <p>
      * The reader and writer marks will not be duplicated. Also be aware that this method will
      * NOT call {@link #retain()} and so the reference count will NOT be increased.
+     *
+     * <p>
+     * 返回共享此缓冲区的整个区域的缓冲区。 修改返回的缓冲区或此缓冲区的内容会影响彼此的内容，同时它们会维护单独的索引和标记。 此方法不会修改此缓冲区的readerIndex或writerIndex。
+     * </p>
+     * <p>
+     * reader和writer标记不会重复。 另请注意，此方法不会调用{@link #retain()}，因此不会增加引用计数。
+     * </p>
      *
      * @return A buffer whose readable content is equivalent to the buffer returned by {@link #slice()}.
      * However this buffer will share the capacity of the underlying buffer, and therefore allows access to all of the

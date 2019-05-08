@@ -150,6 +150,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         if (prevList == null) {
             // There is no previous PoolChunkList so return false which result in having the PoolChunk destroyed and
             // all memory associated with the PoolChunk will be released.
+            // 之前没有PoolChunkList，因此返回false会导致PoolChunk被破坏，并且将释放与PoolChunk关联的所有内存。
             assert chunk.usage() == 0;
             return false;
         }
