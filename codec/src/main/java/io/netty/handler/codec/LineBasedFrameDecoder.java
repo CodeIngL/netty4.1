@@ -32,27 +32,54 @@ import java.util.List;
  * byte values for multibyte codepoint representations therefore fully supported by this implementation.
  * <p>
  * For a more general delimiter-based decoder, see {@link DelimiterBasedFrameDecoder}.
+ *
+ * <p>
+ * 解码器，用于在线路结尾处分割接收到的{@link ByteBuf}s。
+ * <p>
+ * 处理{@code "\n"}和{@code "\r\n"} 两者。
+ * <p>
+ * 字节流应采用UTF-8字符编码或ASCII格式。
+ * 该类实现直接使用{@code byte}进行 {@code char}转换，
+ * 然后将该{@code char}与一些低范围ASCII字符（如{@code '\n'}或{@code '\r'}）进行比较。
+ * UTF-8不使用低范围[0..0x7F]字节值进行多字节代码点表示，因此完全支持此实现。
+ * <p>
+ * 有关更通用的基于分隔符的解码器，请参阅{@link DelimiterBasedFrameDecoder}
  */
 public class LineBasedFrameDecoder extends ByteToMessageDecoder {
 
-    /** Maximum length of a frame we're willing to decode.  */
+    /**
+     * Maximum length of a frame we're willing to decode.
+     * <p>
+     *     我们愿意解码的帧的最大长度。
+     * </p>
+     */
     private final int maxLength;
-    /** Whether or not to throw an exception as soon as we exceed maxLength. */
+    /**
+     * Whether or not to throw an exception as soon as we exceed maxLength.
+     */
     private final boolean failFast;
     private final boolean stripDelimiter;
 
-    /** True if we're discarding input because we're already over maxLength.  */
+    /**
+     * True if we're discarding input because we're already over maxLength.
+     * <p>
+     *     true:如果因为我们已经超过maxLength而丢弃输入。
+     * </p>
+     */
     private boolean discarding;
     private int discardedBytes;
 
-    /** Last scan position. */
+    /**
+     * Last scan position.
+     */
     private int offset;
 
     /**
      * Creates a new decoder.
-     * @param maxLength  the maximum length of the decoded frame.
-     *                   A {@link TooLongFrameException} is thrown if
-     *                   the length of the frame exceeds this value.
+     *
+     * @param maxLength the maximum length of the decoded frame.
+     *                  A {@link TooLongFrameException} is thrown if
+     *                  the length of the frame exceeds this value.
      */
     public LineBasedFrameDecoder(final int maxLength) {
         this(maxLength, true, false);
@@ -60,18 +87,19 @@ public class LineBasedFrameDecoder extends ByteToMessageDecoder {
 
     /**
      * Creates a new decoder.
-     * @param maxLength  the maximum length of the decoded frame.
-     *                   A {@link TooLongFrameException} is thrown if
-     *                   the length of the frame exceeds this value.
-     * @param stripDelimiter  whether the decoded frame should strip out the
-     *                        delimiter or not
-     * @param failFast  If <tt>true</tt>, a {@link TooLongFrameException} is
-     *                  thrown as soon as the decoder notices the length of the
-     *                  frame will exceed <tt>maxFrameLength</tt> regardless of
-     *                  whether the entire frame has been read.
-     *                  If <tt>false</tt>, a {@link TooLongFrameException} is
-     *                  thrown after the entire frame that exceeds
-     *                  <tt>maxFrameLength</tt> has been read.
+     *
+     * @param maxLength      the maximum length of the decoded frame.
+     *                       A {@link TooLongFrameException} is thrown if
+     *                       the length of the frame exceeds this value.
+     * @param stripDelimiter whether the decoded frame should strip out the
+     *                       delimiter or not
+     * @param failFast       If <tt>true</tt>, a {@link TooLongFrameException} is
+     *                       thrown as soon as the decoder notices the length of the
+     *                       frame will exceed <tt>maxFrameLength</tt> regardless of
+     *                       whether the entire frame has been read.
+     *                       If <tt>false</tt>, a {@link TooLongFrameException} is
+     *                       thrown after the entire frame that exceeds
+     *                       <tt>maxFrameLength</tt> has been read.
      */
     public LineBasedFrameDecoder(final int maxLength, final boolean stripDelimiter, final boolean failFast) {
         this.maxLength = maxLength;
@@ -90,10 +118,10 @@ public class LineBasedFrameDecoder extends ByteToMessageDecoder {
     /**
      * Create a frame out of the {@link ByteBuf} and return it.
      *
-     * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
-     * @param   buffer          the {@link ByteBuf} from which to read data
-     * @return  frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
-     *                          be created.
+     * @param ctx    the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param buffer the {@link ByteBuf} from which to read data
+     * @return frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
+     * be created.
      */
     protected Object decode(ChannelHandlerContext ctx, ByteBuf buffer) throws Exception {
         final int eol = findEndOfLine(buffer);
@@ -101,7 +129,7 @@ public class LineBasedFrameDecoder extends ByteToMessageDecoder {
             if (eol >= 0) {
                 final ByteBuf frame;
                 final int length = eol - buffer.readerIndex();
-                final int delimLength = buffer.getByte(eol) == '\r'? 2 : 1;
+                final int delimLength = buffer.getByte(eol) == '\r' ? 2 : 1;
 
                 if (length > maxLength) {
                     buffer.readerIndex(eol + delimLength);
@@ -133,7 +161,7 @@ public class LineBasedFrameDecoder extends ByteToMessageDecoder {
         } else {
             if (eol >= 0) {
                 final int length = discardedBytes + eol - buffer.readerIndex();
-                final int delimLength = buffer.getByte(eol) == '\r'? 2 : 1;
+                final int delimLength = buffer.getByte(eol) == '\r' ? 2 : 1;
                 buffer.readerIndex(eol + delimLength);
                 discardedBytes = 0;
                 discarding = false;
@@ -163,6 +191,8 @@ public class LineBasedFrameDecoder extends ByteToMessageDecoder {
     /**
      * Returns the index in the buffer of the end of line found.
      * Returns -1 if no end of line was found in the buffer.
+     *
+     * 返回找到的行尾的缓冲区中的index。 如果在缓冲区中找不到行尾，则返回-1。
      */
     private int findEndOfLine(final ByteBuf buffer) {
         int totalLength = buffer.readableBytes();

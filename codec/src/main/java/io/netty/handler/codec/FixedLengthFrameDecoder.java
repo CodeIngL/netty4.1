@@ -37,6 +37,23 @@ import java.util.List;
  * | ABC | DEF | GHI |
  * +-----+-----+-----+
  * </pre>
+ *
+ * <p>
+ * 一种解码器，用于将接收的{@link ByteBuf}s拆分固定的字节数。 例如，如果您收到以下四个碎片数据包：
+ * </p>
+ * <pre>
+ * +---+----+------+----+
+ * | A | BC | DEFG | HI |
+ * +---+----+------+----+
+ * </pre>
+ * <p>
+ * {@link FixedLengthFrameDecoder}{@code (3)}将它们解码为具有固定长度的以下三个数据包：
+ * </p>
+ * <pre>
+ * +-----+-----+-----+
+ * | ABC | DEF | GHI |
+ * +-----+-----+-----+
+ * </pre>
  */
 public class FixedLengthFrameDecoder extends ByteToMessageDecoder {
 
@@ -63,10 +80,10 @@ public class FixedLengthFrameDecoder extends ByteToMessageDecoder {
     /**
      * Create a frame out of the {@link ByteBuf} and return it.
      *
-     * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
-     * @param   in              the {@link ByteBuf} from which to read data
-     * @return  frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
-     *                          be created.
+     * @param ctx the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param in  the {@link ByteBuf} from which to read data
+     * @return frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
+     * be created.
      */
     protected Object decode(
             @SuppressWarnings("UnusedParameters") ChannelHandlerContext ctx, ByteBuf in) throws Exception {

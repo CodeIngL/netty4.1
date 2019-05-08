@@ -25,6 +25,8 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
 /**
  * Special {@link AbstractList} implementation which is used within our codec base classes.
+ *
+ * 在我们的编解码器基类中使用的特殊{@link AbstractList}实现。
  */
 final class CodecOutputList extends AbstractList<Object> implements RandomAccess {
 
@@ -48,6 +50,9 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
         void recycle(CodecOutputList codecOutputList);
     }
 
+    /**
+     * 特殊的的二维表
+     */
     private static final class CodecOutputLists implements CodecOutputListRecycler {
         private final CodecOutputList[] elements;
         private final int mask;
@@ -55,31 +60,49 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
         private int currentIdx;
         private int count;
 
+        /**
+         * 一维元素个数
+         * @param numElements
+         */
         CodecOutputLists(int numElements) {
             elements = new CodecOutputList[MathUtil.safeFindNextPositivePowerOfTwo(numElements)];
             for (int i = 0; i < elements.length; ++i) {
                 // Size of 16 should be good enough for the majority of all users as an initial capacity.
+                // 对于大多数用户来说，16的大小应该足够好作为初始容量。
                 elements[i] = new CodecOutputList(this, 16);
             }
+            //一维元素个数
             count = elements.length;
+            //当前索引位置为最大值，无法访问
             currentIdx = elements.length;
+            //掩码
             mask = elements.length - 1;
         }
 
+        /**
+         * 获得或者构建
+         * @return
+         */
         public CodecOutputList getOrCreate() {
             if (count == 0) {
                 // Return a new CodecOutputList which will not be cached. We use a size of 4 to keep the overhead
                 // low.
+                // 返回一个不会被缓存的新CodecOutputList。 我们使用4的大小来保持低开销。
                 return new CodecOutputList(NOOP_RECYCLER, 4);
             }
             --count;
 
+            //从右到左，构建和访问
             int idx = (currentIdx - 1) & mask;
             CodecOutputList list = elements[idx];
             currentIdx = idx;
             return list;
         }
 
+        /**
+         * 回收使用，从左到右
+         * @param codecOutputList
+         */
         @Override
         public void recycle(CodecOutputList codecOutputList) {
             int idx = currentIdx;

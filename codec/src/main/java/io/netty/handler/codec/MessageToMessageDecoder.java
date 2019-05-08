@@ -27,8 +27,8 @@ import java.util.List;
 
 /**
  * {@link ChannelInboundHandlerAdapter} which decodes from one message to an other message.
- *
- *
+ * <p>
+ * <p>
  * For example here is an implementation which decodes a {@link String} to an {@link Integer} which represent
  * the length of the {@link String}.
  *
@@ -43,11 +43,31 @@ import java.util.List;
  *         }
  *     }
  * </pre>
- *
+ * <p>
  * Be aware that you need to call {@link ReferenceCounted#retain()} on messages that are just passed through if they
  * are of type {@link ReferenceCounted}. This is needed as the {@link MessageToMessageDecoder} will call
  * {@link ReferenceCounted#release()} on decoded messages.
  *
+ * <p>
+ * {@link ChannelInboundHandlerAdapter}，它从一条消息解码到另一条消息。
+ * <p>
+ * 例如，这里有一个实现，它将{@link String}解码为{@link Integer}，表示{@link String}的长度。
+ *
+ * <pre>
+ *     public class StringToIntegerDecoder extends
+ *             {@link MessageToMessageDecoder}&lt;{@link String}&gt; {
+ *
+ *         {@code @Override}
+ *         public void decode({@link ChannelHandlerContext} ctx, {@link String} message,
+ *                            List&lt;Object&gt; out) throws {@link Exception} {
+ *             out.add(message.length());
+ *         }
+ *     }
+ * </pre>
+ * <p>
+ *     请注意，如果它们的类型为{@link ReferenceCounted}，则需要对刚刚传递的消息调用{@link ReferenceCounted#retain()}。 这是必需的，
+ *     因为{@link MessageToMessageDecoder}将在已解码的消息上调用{@link ReferenceCounted#release()}
+ * </p>
  */
 public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAdapter {
 
@@ -63,7 +83,7 @@ public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAd
     /**
      * Create a new instance
      *
-     * @param inboundMessageType    The type of messages to match and so decode
+     * @param inboundMessageType The type of messages to match and so decode
      */
     protected MessageToMessageDecoder(Class<? extends I> inboundMessageType) {
         matcher = TypeParameterMatcher.get(inboundMessageType);
@@ -98,7 +118,7 @@ public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAd
             throw new DecoderException(e);
         } finally {
             int size = out.size();
-            for (int i = 0; i < size; i ++) {
+            for (int i = 0; i < size; i++) {
                 ctx.fireChannelRead(out.getUnsafe(i));
             }
             out.recycle();
@@ -109,10 +129,10 @@ public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAd
      * Decode from one message to an other. This method will be called for each written message that can be handled
      * by this decoder.
      *
-     * @param ctx           the {@link ChannelHandlerContext} which this {@link MessageToMessageDecoder} belongs to
-     * @param msg           the message to decode to an other one
-     * @param out           the {@link List} to which decoded messages should be added
-     * @throws Exception    is thrown if an error occurs
+     * @param ctx the {@link ChannelHandlerContext} which this {@link MessageToMessageDecoder} belongs to
+     * @param msg the message to decode to an other one
+     * @param out the {@link List} to which decoded messages should be added
+     * @throws Exception is thrown if an error occurs
      */
     protected abstract void decode(ChannelHandlerContext ctx, I msg, List<Object> out) throws Exception;
 }
