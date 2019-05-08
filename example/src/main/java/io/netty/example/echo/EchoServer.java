@@ -57,7 +57,7 @@ public final class EchoServer {
             b.group(bossGroup, workerGroup)
              .channel(NioServerSocketChannel.class)
              .option(ChannelOption.SO_BACKLOG, 100)
-             .handler(new LoggingHandler(LogLevel.INFO))
+             .handler(new LoggingHandler(LogLevel.TRACE))
              .childHandler(new ChannelInitializer<SocketChannel>() {
                  @Override
                  public void initChannel(SocketChannel ch) throws Exception {
@@ -71,12 +71,15 @@ public final class EchoServer {
              });
 
             // Start the server.
+            // 开始启动服务端
             ChannelFuture f = b.bind(PORT).sync();
 
             // Wait until the server socket is closed.
+            // 等待直到服务端关闭
             f.channel().closeFuture().sync();
         } finally {
             // Shut down all event loops to terminate all threads.
+            // 结束所有事件循环来结束所有线程
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
