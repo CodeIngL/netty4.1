@@ -126,6 +126,11 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
         return SocketUtils.localSocketAddress(javaChannel().socket());
     }
 
+    /**
+     * NioServerSocket处理绑定
+     * @param localAddress
+     * @throws Exception
+     */
     @Override
     protected void doBind(SocketAddress localAddress) throws Exception {
         if (PlatformDependent.javaVersion() >= 7) {
@@ -140,12 +145,20 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
         javaChannel().close();
     }
 
+    /**
+     * 实际的读取操作，serverSocket的处理
+     * @param buf
+     * @return
+     * @throws Exception
+     */
     @Override
     protected int doReadMessages(List<Object> buf) throws Exception {
+        //接收连接
         SocketChannel ch = SocketUtils.accept(javaChannel());
 
         try {
             if (ch != null) {
+                //构建消息，子Channle和自己和对应的SocketChannel绑定
                 buf.add(new NioSocketChannel(this, ch));
                 return 1;
             }

@@ -35,6 +35,9 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 
 /**
  * The default {@link ServerSocketChannelConfig} implementation.
+ * <p>
+ *     默认的{@link ServerSocketChannelConfig}实现。
+ * </p>
  */
 public class DefaultServerSocketChannelConfig extends DefaultChannelConfig
                                               implements ServerSocketChannelConfig {

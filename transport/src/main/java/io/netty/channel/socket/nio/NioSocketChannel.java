@@ -131,6 +131,10 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         return javaChannel().socket().isOutputShutdown() || !isActive();
     }
 
+    /**
+     * 返回套接字连接的读半部分是否已关闭。或者已经不再是Active
+     * @return
+     */
     @Override
     public boolean isInputShutdown() {
         return javaChannel().socket().isInputShutdown() || !isActive();
