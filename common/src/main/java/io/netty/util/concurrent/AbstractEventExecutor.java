@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract base class for {@link EventExecutor} implementations.
+ * {@link EventExecutor}的抽象类实现
  */
 public abstract class AbstractEventExecutor extends AbstractExecutorService implements EventExecutor {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractEventExecutor.class);
@@ -57,6 +58,10 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
         return this;
     }
 
+    /**
+     * 是否在事件循环中
+     * @return
+     */
     @Override
     public boolean inEventLoop() {
         return inEventLoop(Thread.currentThread());
@@ -67,6 +72,11 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
         return selfCollection.iterator();
     }
 
+    /**
+     * 优雅的关闭
+     * @return future结构
+     * @see #shutdownGracefully(long, long, TimeUnit)
+     */
     @Override
     public Future<?> shutdownGracefully() {
         return shutdownGracefully(DEFAULT_SHUTDOWN_QUIET_PERIOD, DEFAULT_SHUTDOWN_TIMEOUT, TimeUnit.SECONDS);

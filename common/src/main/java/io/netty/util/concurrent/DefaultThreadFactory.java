@@ -27,11 +27,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class DefaultThreadFactory implements ThreadFactory {
 
+    //线程工厂Id
     private static final AtomicInteger poolId = new AtomicInteger();
-
+    //工厂中有的线程的标志组成部分
     private final AtomicInteger nextId = new AtomicInteger();
+    //标志的组成前缀
     private final String prefix;
+    //是否是守护线程
     private final boolean daemon;
+    //线程的优先级
     private final int priority;
     protected final ThreadGroup threadGroup;
 
@@ -83,6 +87,12 @@ public class DefaultThreadFactory implements ThreadFactory {
         }
     }
 
+    /**
+     * 最为核心的构造函数
+     * @param poolName 名字
+     * @param daemon 是否守护线程
+     * @param priority 线程优先级
+     */
     public DefaultThreadFactory(String poolName, boolean daemon, int priority, ThreadGroup threadGroup) {
         if (poolName == null) {
             throw new NullPointerException("poolName");
@@ -103,6 +113,11 @@ public class DefaultThreadFactory implements ThreadFactory {
                 Thread.currentThread().getThreadGroup() : System.getSecurityManager().getThreadGroup());
     }
 
+    /**
+     * 获得一个新的线程，其将运行参数Runnable
+     * @param r
+     * @return
+     */
     @Override
     public Thread newThread(Runnable r) {
         Thread t = newThread(FastThreadLocalRunnable.wrap(r), prefix + nextId.incrementAndGet());
@@ -120,6 +135,11 @@ public class DefaultThreadFactory implements ThreadFactory {
         return t;
     }
 
+    /**
+     * 获得一个新的线程，其将运行参数Runnable
+     * @param r
+     * @return
+     */
     protected Thread newThread(Runnable r, String name) {
         return new FastThreadLocalThread(threadGroup, r, name);
     }

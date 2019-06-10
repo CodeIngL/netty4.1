@@ -26,6 +26,13 @@ import java.util.concurrent.TimeUnit;
  * via its {@link #next()} method. Besides this, it is also responsible for handling their
  * life-cycle and allows shutting them down in a global fashion.
  *
+ * 这个EventExecutorGroup代表了提供EventExecutor，通过使用next方法。同时也代表了处理他们生命周期以及以一个全局的
+ * 方式关闭它们
+ *
+ * 事件执行器组，继承自可以调度的执行器服务，继承事件执行器的迭代器（说明可以对事件执行者管理），
+ * 当然执行者本来就可能是事件执行器组（带组执行）因此EventExecutor继承了EventExecutorGroup
+ *
+ *
  */
 public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<EventExecutor> {
 
@@ -48,6 +55,10 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
      * Unlike {@link #shutdown()}, graceful shutdown ensures that no tasks are submitted for <i>'the quiet period'</i>
      * (usually a couple seconds) before it shuts itself down.  If a task is submitted during the quiet period,
      * it is guaranteed to be accepted and the quiet period will start over.
+     * 这个执行者的信号表明来电者要执行者被关闭。
+     * 一旦这个方法被调用，isShuttingDown（）开始返回true，执行程序准备关闭。
+     * 与shutdown（）不同的是，正常关闭可以确保在关闭之前没有任何任务被提交到“安静期”（通常是几秒）。
+     * 如果在安静期间提交任务，则保证被接受，安静期将重新开始。
      *
      * @param quietPeriod the quiet period as described in the documentation
      * @param timeout     the maximum amount of time to wait until the executor is {@linkplain #shutdown()}

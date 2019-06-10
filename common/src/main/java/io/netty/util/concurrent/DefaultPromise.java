@@ -55,6 +55,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     private Object listeners;
     /**
      * Threading - synchronized(this). We are required to hold the monitor to use Java's underlying wait()/notifyAll().
+     * 线程 - synchronized(this)。 我们需要让监视器使用Java的底层wait（）/ notifyAll（）。
      */
     private short waiters;
 
@@ -114,6 +115,10 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         return setFailure0(cause);
     }
 
+    /**
+     * 设置不可取消状态
+     * @return
+     */
     @Override
     public boolean setUncancellable() {
         if (RESULT_UPDATER.compareAndSet(this, null, UNCANCELLABLE)) {
@@ -202,16 +207,27 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         return this;
     }
 
+    /**
+     * 等待
+     * @return
+     * @throws InterruptedException
+     */
     @Override
     public Promise<V> await() throws InterruptedException {
         if (isDone()) {
             return this;
         }
 
+        /**
+         * 中断支持
+         */
         if (Thread.interrupted()) {
             throw new InterruptedException(toString());
         }
 
+        /**
+         * 检测死锁
+         */
         checkDeadLock();
 
         synchronized (this) {
@@ -300,12 +316,14 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     /**
      * {@inheritDoc}
      *
+     * 取消操作，对于并发包中Future的cancel实现
      * @param mayInterruptIfRunning this value has no effect in this implementation.
      */
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         if (RESULT_UPDATER.compareAndSet(this, null, CANCELLATION_CAUSE_HOLDER)) {
             if (checkNotifyWaiters()) {
+                //通知所有监听器
                 notifyListeners();
             }
             return true;
@@ -318,6 +336,11 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         return isCancelled0(result);
     }
 
+    /**
+     * 是否完成
+     * 值不为空且不是UNCANCELLABLE
+     * @return
+     */
     @Override
     public boolean isDone() {
         return isDone0(result);
@@ -404,11 +427,15 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         notifyListenerWithStackOverFlowProtection(eventExecutor, future, listener);
     }
 
+    /**
+     * 通知所有监听器，所有的监听器也要在事件循环中执行，否则在
+     */
     private void notifyListeners() {
         EventExecutor executor = executor();
         if (executor.inEventLoop()) {
             final InternalThreadLocalMap threadLocals = InternalThreadLocalMap.get();
             final int stackDepth = threadLocals.futureListenerStackDepth();
+            //最大的栈深度
             if (stackDepth < MAX_LISTENER_STACK_DEPTH) {
                 threadLocals.setFutureListenerStackDepth(stackDepth + 1);
                 try {
@@ -432,6 +459,8 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
      * The logic in this method should be identical to {@link #notifyListeners()} but
      * cannot share code because the listener(s) cannot be cached for an instance of {@link DefaultPromise} since the
      * listener(s) may be changed and is protected by a synchronized operation.
+     * <p>
+     *     此方法中的逻辑应与{@link #notifyListeners()} 相同但不能共享代码，因为无法为{@link DefaultPromise}实例缓存侦听器，因为侦听器可能已更改并受同步操作保护。
      */
     private static void notifyListenerWithStackOverFlowProtection(final EventExecutor executor,
                                                                   final Future<?> future,
@@ -546,6 +575,9 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     /**
      * Check if there are any waiters and if so notify these.
+     * <p>
+     *     检查是否有waiters，如果是，请通知这些。
+     * </p>
      * @return {@code true} if there are any listeners attached to the promise, {@code false} otherwise.
      */
     private synchronized boolean checkNotifyWaiters() {
@@ -761,6 +793,11 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         }
     }
 
+    /**
+     * 安全的执行
+     * @param executor
+     * @param task
+     */
     private static void safeExecute(EventExecutor executor, Runnable task) {
         try {
             executor.execute(task);

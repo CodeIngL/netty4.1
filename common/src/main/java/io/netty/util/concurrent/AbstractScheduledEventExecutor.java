@@ -27,6 +27,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract base class for {@link EventExecutor}s that want to support scheduling.
+ * <p>
+ *     想要支持调度的{@link EventExecutor}的抽象基类。
+ * </p>
  */
 public abstract class AbstractScheduledEventExecutor extends AbstractEventExecutor {
 
@@ -97,6 +100,9 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
     /**
      * Return the {@link Runnable} which is ready to be executed with the given {@code nanoTime}.
      * You should use {@link #nanoTime()} to retrieve the correct {@code nanoTime}.
+     * <p>
+     *     返回准备好使用给定的{@code nanoTime}执行的 {@link Runnable}。 您应该使用{@link #nanoTime()}来检索正确的{@code nanoTime}。
+     * </p>
      */
     protected final Runnable pollScheduledTask(long nanoTime) {
         assert inEventLoop();

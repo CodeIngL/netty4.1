@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Abstract base class for {@link EventExecutorGroup} implementations that handles their tasks with multiple threads at
  * the same time.
+ *
+ * 抽象基本类EventExecutorGroup实现，功能是使用多个线程同时进行处理他们的任务
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
 
@@ -34,6 +36,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
     private final Set<EventExecutor> readonlyChildren;
     private final AtomicInteger terminatedChildren = new AtomicInteger();
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
+    //事件执行器的选择策略（选择合适的组内执行事件执行器)
     private final EventExecutorChooserFactory.EventExecutorChooser chooser;
 
     /**
@@ -60,7 +63,8 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
     /**
      * Create a new instance.
-     *
+     * 创建一个新实例
+     * 一个组拥有多个可执行的线程
      * @param nThreads          the number of threads that will be used by this instance.
      * @param executor          the Executor to use, or {@code null} if the default should be used.
      * @param chooserFactory    the {@link EventExecutorChooserFactory} to use.
@@ -68,33 +72,45 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
      */
     protected MultithreadEventExecutorGroup(int nThreads, Executor executor,
                                             EventExecutorChooserFactory chooserFactory, Object... args) {
+        //简单的校验参数
         if (nThreads <= 0) {
             throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
         }
 
+        //是否生成默认值,不指定ThreadFactory，那么会使用默认的factory
         if (executor == null) {
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
 
+        //创建子数组（单线程事件执行者）
         children = new EventExecutor[nThreads];
 
+        /**
+         * 构建子事件执行器
+         */
         for (int i = 0; i < nThreads; i ++) {
+            //设定标记
             boolean success = false;
             try {
+                //构建内部线程执行器
                 children[i] = newChild(executor, args);
+                //设定成功标记
                 success = true;
             } catch (Exception e) {
                 // TODO: Think about if this is a good exception type
                 throw new IllegalStateException("failed to create a child event loop", e);
             } finally {
+                //发生错误，进行关闭处理，同时关闭已经新建成功的children前面的持有元素
                 if (!success) {
                     for (int j = 0; j < i; j ++) {
+                        //尝试关闭
                         children[j].shutdownGracefully();
                     }
-
+                    //进行等待关闭
                     for (int j = 0; j < i; j ++) {
                         EventExecutor e = children[j];
                         try {
+                            //等待事件执行器终止
                             while (!e.isTerminated()) {
                                 e.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
                             }
@@ -108,6 +124,9 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             }
         }
 
+        /**
+         * 构建选择策略器
+         */
         chooser = chooserFactory.newChooser(children);
 
         final FutureListener<Object> terminationListener = new FutureListener<Object>() {

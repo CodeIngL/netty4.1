@@ -20,11 +20,23 @@ import java.util.concurrent.RunnableFuture;
 
 class PromiseTask<V> extends DefaultPromise<V> implements RunnableFuture<V> {
 
+    /**
+     * 包装为可调用的任务
+     * @param runnable
+     * @param result
+     * @param <T>
+     * @return
+     */
     static <T> Callable<T> toCallable(Runnable runnable, T result) {
         return new RunnableAdapter<T>(runnable, result);
     }
 
+    /**
+     * 可运行的装备
+     * @param <T>
+     */
     private static final class RunnableAdapter<T> implements Callable<T> {
+        //任务
         final Runnable task;
         final T result;
 

@@ -20,11 +20,13 @@ import io.netty.util.internal.UnstableApi;
 
 /**
  * A special {@link Thread} that provides fast access to {@link FastThreadLocal} variables.
+ * 一个特殊的线程提供了快速访问FastThreadLocal变量
  */
 public class FastThreadLocalThread extends Thread {
     // This will be set to true if we have a chance to wrap the Runnable.
     private final boolean cleanupFastThreadLocals;
 
+    //内部维护的一个threadLocal映射用于快速的进行访问
     private InternalThreadLocalMap threadLocalMap;
 
     public FastThreadLocalThread() {
@@ -69,6 +71,9 @@ public class FastThreadLocalThread extends Thread {
     /**
      * Returns the internal data structure that keeps the thread-local variables bound to this thread.
      * Note that this method is for internal use only, and thus is subject to change at any time.
+     *
+     * 返回一个内部的数据结构用于保证thread-loacl会与该线程进行绑定
+     * 注意这个方法是内部使用的，因此可能随时将会改变
      */
     public final InternalThreadLocalMap threadLocalMap() {
         return threadLocalMap;
@@ -77,6 +82,10 @@ public class FastThreadLocalThread extends Thread {
     /**
      * Sets the internal data structure that keeps the thread-local variables bound to this thread.
      * Note that this method is for internal use only, and thus is subject to change at any time.
+     *
+     * 设置内部的数据结构用于保证thread-local变量与本线程绑定
+     * 注意这个方法是内部使用的，因此可能随时将会改变
+     *
      */
     public final void setThreadLocalMap(InternalThreadLocalMap threadLocalMap) {
         this.threadLocalMap = threadLocalMap;

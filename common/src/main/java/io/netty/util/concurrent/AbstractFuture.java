@@ -23,6 +23,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Abstract {@link Future} implementation which does not allow for cancellation.
  *
+ * 抽象的Futrue的实现，不允许取消。
  * @param <V>
  */
 public abstract class AbstractFuture<V> implements Future<V> {

@@ -21,33 +21,42 @@ package io.netty.util.concurrent;
  * Besides this, it also extends the {@link EventExecutorGroup} to allow for a generic
  * way to access methods.
  *
+ * 这个 EventExecutor是一个特殊的EventExecutorGroup。它提供了一些便捷的方法去看这个线程是否在事件循环器中执行。
+ * 除此之外它扩展了EventExcecutorGroup以允许些通用的方式来访问方法
+ *
  */
 public interface EventExecutor extends EventExecutorGroup {
 
     /**
      * Returns a reference to itself.
+     * 返回对其本身的引用
      */
     @Override
     EventExecutor next();
 
     /**
      * Return the {@link EventExecutorGroup} which is the parent of this {@link EventExecutor},
+     * 返回一个EventExecutoerGroup，这个是本EventExecutor的父
      */
     EventExecutorGroup parent();
 
     /**
      * Calls {@link #inEventLoop(Thread)} with {@link Thread#currentThread()} as argument
+     * 等价于调用inEventLoop（Thread），参数是Thread.currentThread
      */
     boolean inEventLoop();
 
     /**
      * Return {@code true} if the given {@link Thread} is executed in the event loop,
      * {@code false} otherwise.
+     *
+     * 返回true，当传递的参数是事件循环中的执行的线程事。否则返回false
      */
     boolean inEventLoop(Thread thread);
 
     /**
      * Return a new {@link Promise}.
+     * 返回一个新的Promise
      */
     <V> Promise<V> newPromise();
 

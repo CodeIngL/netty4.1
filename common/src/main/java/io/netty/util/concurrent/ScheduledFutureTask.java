@@ -27,26 +27,37 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @SuppressWarnings("ComparableImplementedButEqualsNotOverridden")
 final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFuture<V>, PriorityQueueNode {
+    //下一个任务的Id
     private static final AtomicLong nextTaskId = new AtomicLong();
+    //开始的时间，ns
     private static final long START_TIME = System.nanoTime();
-
+    //获得ns时间差
     static long nanoTime() {
         return System.nanoTime() - START_TIME;
     }
-
+    //在现在这个时间点上延迟delay纳秒
     static long deadlineNanos(long delay) {
         long deadlineNanos = nanoTime() + delay;
         // Guard against overflow
         return deadlineNanos < 0 ? Long.MAX_VALUE : deadlineNanos;
     }
-
+    //当前任务的id标识
     private final long id = nextTaskId.getAndIncrement();
+    //死亡的ns时间
     private long deadlineNanos;
     /* 0 - no repeat, >0 - repeat at fixed rate, <0 - repeat with fixed delay */
+    /* 0代表不重复，大于0代表固定的比率，小于0代表固定的延迟时间*/
     private final long periodNanos;
 
     private int queueIndex = INDEX_NOT_IN_QUEUE;
 
+    /**
+     * 一个任务
+     * @param executor
+     * @param runnable
+     * @param result
+     * @param nanoTime
+     */
     ScheduledFutureTask(
             AbstractScheduledEventExecutor executor,
             Runnable runnable, V result, long nanoTime) {
@@ -118,6 +129,9 @@ final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFu
         }
     }
 
+    /**
+     * 一个特殊任务处理
+     */
     @Override
     public void run() {
         assert executor().inEventLoop();

@@ -34,6 +34,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Single-thread singleton {@link EventExecutor}.  It starts the thread automatically and stops it when there is no
  * task pending in the task queue for 1 second.  Please note it is not scalable to schedule large number of tasks to
  * this executor; use a dedicated executor.
+ *
+ * 单线程单例{@link EventExecutor}。
+ * 它会自动启动线程，并在任务队列中没有任务挂起1秒时停止线程。
+ * 请注意，对于执行者来说，安排大量的任务是不可扩展的。 使用专用的执行者。
  */
 public final class GlobalEventExecutor extends AbstractScheduledEventExecutor implements OrderedEventExecutor {
 
@@ -43,7 +47,9 @@ public final class GlobalEventExecutor extends AbstractScheduledEventExecutor im
 
     public static final GlobalEventExecutor INSTANCE = new GlobalEventExecutor();
 
+    //任务队列
     final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
+    //延迟队列
     final ScheduledFutureTask<Void> quietPeriodTask = new ScheduledFutureTask<Void>(
             this, Executors.<Void>callable(new Runnable() {
         @Override
