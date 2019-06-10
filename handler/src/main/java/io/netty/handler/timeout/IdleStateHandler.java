@@ -92,6 +92,67 @@ import java.util.concurrent.TimeUnit;
  * ...
  * </pre>
  *
+ * <p>
+ *     当{@link Channel}没有执行读，写或两者操作一段时间时触发{@link IdleStateEvent}。
+ * </p>
+ *
+ * <h3>Supported idle states</h3>
+ * <table border="1">
+ * <tr>
+ * <th>Property</th><th>Meaning</th>
+ * </tr>
+ * <tr>
+ * <td>{@code readerIdleTime}</td>
+ * <td>
+ *     如果在指定的时间段内未执行任何读取，则将触发状态为{@link IdleState#READER_IDLE}的{@link IdleStateEvent}。 指定{@code 0}以禁用</td>
+ * </tr>
+ * <tr>
+ * <td>{@code writerIdleTime}</td>
+ * <td>
+ *     当在指定的时间段内未执行写入时，将触发状态为{@link IdleState#WRITER_IDLE}的{@link IdleStateEvent}。 指定{@code 0}以禁用
+ * </td>
+ * </tr>
+ * <tr>
+ * <td>{@code allIdleTime}</td>
+ * <td>
+ *     当在指定的时间段内既没有执行读取也没有执行写入时，将触发状态为{@link IdleState#ALL_IDLE}的{@link IdleStateEvent}。 指定{@code 0}以禁用。
+ * </td>
+ * </tr>
+ * </table>
+ * <pre>
+ * // An example that sends a ping message when there is no outbound traffic
+ * // for 30 seconds.  The connection is closed when there is no inbound traffic
+ * // for 60 seconds.
+ *
+ * public class MyChannelInitializer extends {@link ChannelInitializer}&lt;{@link Channel}&gt; {
+ *     {@code @Override}
+ *     public void initChannel({@link Channel} channel) {
+ *         channel.pipeline().addLast("idleStateHandler", new {@link IdleStateHandler}(60, 30, 0));
+ *         channel.pipeline().addLast("myHandler", new MyHandler());
+ *     }
+ * }
+ *
+ * // Handler should handle the {@link IdleStateEvent} triggered by {@link IdleStateHandler}.
+ * public class MyHandler extends {@link ChannelDuplexHandler} {
+ *     {@code @Override}
+ *     public void userEventTriggered({@link ChannelHandlerContext} ctx, {@link Object} evt) throws {@link Exception} {
+ *         if (evt instanceof {@link IdleStateEvent}) {
+ *             {@link IdleStateEvent} e = ({@link IdleStateEvent}) evt;
+ *             if (e.state() == {@link IdleState}.READER_IDLE) {
+ *                 ctx.close();
+ *             } else if (e.state() == {@link IdleState}.WRITER_IDLE) {
+ *                 ctx.writeAndFlush(new PingMessage());
+ *             }
+ *         }
+ *     }
+ * }
+ *
+ * {@link ServerBootstrap} bootstrap = ...;
+ * ...
+ * bootstrap.childHandler(new MyChannelInitializer());
+ * ...
+ * </pre>
+ *
  * @see ReadTimeoutHandler
  * @see WriteTimeoutHandler
  */
