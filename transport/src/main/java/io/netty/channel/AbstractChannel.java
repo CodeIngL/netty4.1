@@ -460,23 +460,33 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             return remoteAddress0();
         }
 
+        /**
+         * 建立事件循环和channelpromise和channel的关系。
+         * @param eventLoop
+         * @param promise
+         */
         @Override
         public final void register(EventLoop eventLoop, final ChannelPromise promise) {
+            //校验参数
             if (eventLoop == null) {
                 throw new NullPointerException("eventLoop");
             }
+            //this这个channel校验，不能重复注册
             if (isRegistered()) {
                 promise.setFailure(new IllegalStateException("registered to an event loop already"));
                 return;
             }
+            //事件循环和本channel是否兼容
             if (!isCompatible(eventLoop)) {
                 promise.setFailure(
                         new IllegalStateException("incompatible event loop type: " + eventLoop.getClass().getName()));
                 return;
             }
 
+            //建立联系
             AbstractChannel.this.eventLoop = eventLoop;
 
+            //所处的地方是位于事件循环线程中，是直接注册，否则构建一个任务，提交给事件循环处理
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
@@ -498,10 +508,15 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
+        /**
+         * 核心的注册逻辑，promise通常包含了本channel对象
+         * @param promise
+         */
         private void register0(ChannelPromise promise) {
             try {
                 // check if the channel is still open as it could be closed in the mean time when the register
                 // call was outside of the eventLoop
+                // 检查channel是否仍然打开，因为它可以在寄存器调用超出eventLoop的同时关闭
                 if (!promise.setUncancellable() || !ensureOpen(promise)) {
                     return;
                 }
@@ -512,16 +527,21 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
                 // Ensure we call handlerAdded(...) before we actually notify the promise. This is needed as the
                 // user may already fire events through the pipeline in the ChannelFutureListener.
+                // 确保在实际通知promise之前调用handlerAdded(...)。 这是必需的，因为用户可能已经通过ChannelFutureListener中的管道fire事件。
                 pipeline.invokeHandlerAddedIfNeeded();
 
+                //标记结果为真
                 safeSetSuccess(promise);
+                //激发注册成功事件
                 pipeline.fireChannelRegistered();
                 // Only fire a channelActive if the channel has never been registered. This prevents firing
                 // multiple channel actives if the channel is deregistered and re-registered.
+                // 如果channel从未注册，则仅触发channelActive。 如果取消注册并重新注册channel，则可以防止触发多个channel actives。
                 if (isActive()) {
-                    if (firstRegistration) {
+                    if (firstRegistration) {//第一次注册的时候触发
                         pipeline.fireChannelActive();
                     } else if (config().isAutoRead()) {
+                        // 之前注册了此channel，并设置了autoRead()。 这意味着我们需要再次开始读取，以便我们处理入站数据。
                         // This channel was registered before and autoRead() is set. This means we need to begin read
                         // again so that we process inbound data.
                         //
@@ -537,6 +557,11 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
+        /**
+         * 真正的socket绑定
+         * @param localAddress
+         * @param promise
+         */
         @Override
         public final void bind(final SocketAddress localAddress, final ChannelPromise promise) {
             assertEventLoop();
@@ -560,6 +585,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             boolean wasActive = isActive();
             try {
+                //特定实现处理地址的绑定
                 doBind(localAddress);
             } catch (Throwable t) {
                 safeSetFailure(promise, t);
@@ -576,6 +602,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 });
             }
 
+            //设置成功
             safeSetSuccess(promise);
         }
 
@@ -861,6 +888,11 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
+        /**
+         * 写操作
+         * @param msg
+         * @param promise
+         */
         @Override
         public final void write(Object msg, ChannelPromise promise) {
             assertEventLoop();
@@ -871,6 +903,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 // need to fail the future right away. If it is not null the handling of the rest
                 // will be done in flush0()
                 // See https://github.com/netty/netty/issues/2362
+                // 如果outboundBuffer为null，我们知道通道已关闭，因此需要立即失败。
+                // 如果它不为null，则其余的处理将在flush0()中完成
+                // 请参阅https://github.com/netty/netty/issues/2362
                 safeSetFailure(promise, newWriteException(initialCloseCause));
                 // release message now to prevent resource-leak
                 ReferenceCountUtil.release(msg);
@@ -893,6 +928,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             outboundBuffer.addMessage(msg, size, promise);
         }
 
+        /**
+         * 刷新
+         */
         @Override
         public final void flush() {
             assertEventLoop();
@@ -906,6 +944,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             flush0();
         }
 
+        /**
+         * 刷新
+         */
         @SuppressWarnings("deprecation")
         protected void flush0() {
             if (inFlush0) {
@@ -1138,12 +1179,19 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Flush the content of the given buffer to the remote peer.
+     * <p>
+     *     将给定缓冲区的内容刷新到远程对等方。
+     * </p>
      */
     protected abstract void doWrite(ChannelOutboundBuffer in) throws Exception;
 
     /**
      * Invoked when a new message is added to a {@link ChannelOutboundBuffer} of this {@link AbstractChannel}, so that
      * the {@link Channel} implementation converts the message to another. (e.g. heap buffer -> direct buffer)
+     * <p>
+     *     将新消息添加到此{@link AbstractChannel}的{@link ChannelOutboundBuffer}时调用，以便{@link Channel} 实现将消息转换为另一个消息。
+     *     （例如堆缓冲区 - >直接缓冲区）
+     * </p>
      */
     protected Object filterOutboundMessage(Object msg) throws Exception {
         return msg;

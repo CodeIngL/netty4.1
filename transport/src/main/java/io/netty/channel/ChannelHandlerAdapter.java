@@ -41,6 +41,8 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
     /**
      * Return {@code true} if the implementation is {@link Sharable} and so can be added
      * to different {@link ChannelPipeline}s.
+     * <p>
+     *     如果实现是ChannelHandler.{@link Sharable} ，则返回{@code true}，因此可以添加到不同的{@link ChannelPipeline}s。
      */
     public boolean isSharable() {
         /**

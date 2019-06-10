@@ -42,6 +42,9 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 /**
  * The default {@link ChannelPipeline} implementation.  It is usually created
  * by a {@link Channel} implementation when the {@link Channel} is created.
+ * <p>
+ *     默认的{@link ChannelPipeline}实现。 它通常在创建{@link Channel}时由{@link Channel}实现创建。
+ * </p>
  */
 public class DefaultChannelPipeline implements ChannelPipeline {
 
@@ -80,12 +83,23 @@ public class DefaultChannelPipeline implements ChannelPipeline {
      * We only keep the head because it is expected that the list is used infrequently and its size is small.
      * Thus full iterations to do insertions is assumed to be a good compromised to saving memory and tail management
      * complexity.
+     * <p>
+     *     这是由{@link #callHandlerAddedForAllHandlers()}处理的链表的head，因此处理所有挂起的{@link #callHandlerAdded0(AbstractChannelHandlerContext)}。
+     * </p>
+     * <p>
+     *     我们只保留head，因为预计列表不经常使用且尺寸很小。
+     * </p>
+     * <p>
+     *     因此，假设执行插入的完整迭代对于节省内存和尾部管理复杂性是一个很好的妥协
+     * </p>
      */
     private PendingHandlerCallback pendingHandlerCallbackHead;
 
     /**
      * Set to {@code true} once the {@link AbstractChannel} is registered.Once set to {@code true} the value will never
      * change.
+     * <p>
+     *     AbstractChannel注册后后设置为true。一旦设置为true，该值将永远不会更改。
      */
     private boolean registered;
 
@@ -120,6 +134,11 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         return new DefaultChannelHandlerContext(this, childExecutor(group), name, handler);
     }
 
+    /**
+     * 获得事件执行器
+     * @param group
+     * @return
+     */
     private EventExecutor childExecutor(EventExecutorGroup group) {
         if (group == null) {
             return null;
@@ -166,6 +185,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             // If the registered is false it means that the channel was not registered on an eventLoop yet.
             // In this case we add the context to the pipeline and add a task that will call
             // ChannelHandler.handlerAdded(...) once the channel is registered.
+            // 如果注册为false，则表示该channel尚未在eventLoop上注册。 在这种情况下，我们将上下文添加到管道并添加一个任务，一旦注册了该通道，它将调用ChannelHandler.handlerAdded(...) 。
             if (!registered) {
                 newCtx.setAddPending();
                 callHandlerCallbackLater(newCtx, true);
@@ -644,10 +664,11 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
     final void invokeHandlerAddedIfNeeded() {
         assert channel.eventLoop().inEventLoop();
-        if (firstRegistration) {
+        if (firstRegistration) { //仅仅调用一次
             firstRegistration = false;
             // We are now registered to the EventLoop. It's time to call the callbacks for the ChannelHandlers,
             // that were added before the registration was done.
+            // 我们现在注册到EventLoop。 是时候调用ChannelHandlers的回调了，这些回调是在注册完成之前添加的。
             callHandlerAddedForAllHandlers();
         }
     }
@@ -1105,6 +1126,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    /**
+     * 回调在注册之前的操作
+     */
     private void callHandlerAddedForAllHandlers() {
         final PendingHandlerCallback pendingHandlerCallbackHead;
         synchronized (this) {
@@ -1240,6 +1264,8 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     }
 
     // A special catch-all handler that handles both bytes and messages.
+    // 一个特殊的catch-all处理程序，它处理字节和消息。
+    // 尾环境
     final class TailContext extends AbstractChannelHandlerContext implements ChannelInboundHandler {
 
         TailContext(DefaultChannelPipeline pipeline) {
@@ -1300,6 +1326,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    /**
+     * 头环境
+     */
     final class HeadContext extends AbstractChannelHandlerContext
             implements ChannelOutboundHandler, ChannelInboundHandler {
 
@@ -1326,6 +1355,12 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             // NOOP
         }
 
+        /**
+         * 进行绑定
+         * @param ctx           the {@link ChannelHandlerContext} for which the bind operation is made
+         * @param localAddress  the {@link SocketAddress} to which it should bound
+         * @param promise       the {@link ChannelPromise} to notify once the operation completes
+         */
         @Override
         public void bind(
                 ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise) {
@@ -1415,6 +1450,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             readIfIsAutoRead();
         }
 
+        /**
+         * 是否自动read
+         */
         private void readIfIsAutoRead() {
             if (channel.config().isAutoRead()) {
                 channel.read();

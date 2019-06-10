@@ -69,14 +69,26 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
         return (EventLoop) super.next();
     }
 
+    /**
+     * <p>
+     *     使用此EventLoop注册一个channel。 注册完成后，返回的ChannelFuture将收到通知。
+     * @param channel 需要注册的channel
+     * @return 一个异步结果DefaultChannelPromise
+     */
     @Override
     public ChannelFuture register(Channel channel) {
         return register(new DefaultChannelPromise(channel, this));
     }
 
+    /**
+     * 注册一个支持异步获取结果的ChannelPromise
+     * @param promise
+     * @return
+     */
     @Override
     public ChannelFuture register(final ChannelPromise promise) {
         ObjectUtil.checkNotNull(promise, "promise");
+        //项unsfafe注册事件循环器和支持channel一个异步promisee
         promise.channel().unsafe().register(this, promise);
         return promise;
     }

@@ -222,6 +222,7 @@ public interface ChannelPipeline
      * @param name     the name of the handler to insert first
      * @param handler  the handler to insert first
      *
+     *
      * @throws IllegalArgumentException
      *         if there's an entry with the same name already in the pipeline
      * @throws NullPointerException

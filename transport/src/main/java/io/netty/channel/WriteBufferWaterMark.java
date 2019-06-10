@@ -29,6 +29,15 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
  * dropped down below the {@linkplain #low low water mark},
  * {@link Channel#isWritable()} will start to return
  * {@code true} again.
+ * <p>
+ *     WriteBufferWaterMark用于为写入缓冲区设置低水位线和高水位线。
+ * </p>
+ * <p>
+ * 如果写缓冲区中排队的字节数超过高水位线，则 {@link Channel#isWritable()}将开始返回{@code false}。
+ * </p>
+ * <p>
+ * 如果写缓冲区中排队的字节数超过高水位线然后降低到低水位线以下，则 {@link Channel#isWritable()}将再次开始返回true。
+ * </p>
  */
 public final class WriteBufferWaterMark {
 

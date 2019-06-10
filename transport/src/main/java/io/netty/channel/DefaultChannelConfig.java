@@ -56,6 +56,7 @@ public class DefaultChannelConfig implements ChannelConfig {
     protected final Channel channel;
 
     private volatile ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
+    //默认我们使用自适应的AdaptiveRecvByteBufAllocator进行分配
     private volatile RecvByteBufAllocator rcvBufAllocator;
     private volatile MessageSizeEstimator msgSizeEstimator = DEFAULT_MSG_SIZE_ESTIMATOR;
 
@@ -67,6 +68,10 @@ public class DefaultChannelConfig implements ChannelConfig {
     private volatile WriteBufferWaterMark writeBufferWaterMark = WriteBufferWaterMark.DEFAULT;
     private volatile boolean pinEventExecutor = true;
 
+    /**
+     * 默认的channelConfig的配置
+     * @param channel
+     */
     public DefaultChannelConfig(Channel channel) {
         this(channel, new AdaptiveRecvByteBufAllocator());
     }
@@ -81,10 +86,19 @@ public class DefaultChannelConfig implements ChannelConfig {
     public Map<ChannelOption<?>, Object> getOptions() {
         return getOptions(
                 null,
-                CONNECT_TIMEOUT_MILLIS, MAX_MESSAGES_PER_READ, WRITE_SPIN_COUNT,
-                ALLOCATOR, AUTO_READ, AUTO_CLOSE, RCVBUF_ALLOCATOR, WRITE_BUFFER_HIGH_WATER_MARK,
-                WRITE_BUFFER_LOW_WATER_MARK, WRITE_BUFFER_WATER_MARK, MESSAGE_SIZE_ESTIMATOR,
-                SINGLE_EVENTEXECUTOR_PER_GROUP);
+                CONNECT_TIMEOUT_MILLIS, //connection_time_out
+                MAX_MESSAGES_PER_READ, //max_message_pre_read
+                WRITE_SPIN_COUNT, //write_spin_count
+                ALLOCATOR, //allocator
+                AUTO_READ, //auto_read
+                AUTO_CLOSE, //auto_close
+                RCVBUF_ALLOCATOR, //rcvbuf_allocator
+                WRITE_BUFFER_HIGH_WATER_MARK,//write_buffer_high_water_mark
+                WRITE_BUFFER_LOW_WATER_MARK,//write_buffer_low_water_mark
+                WRITE_BUFFER_WATER_MARK,//write_buffer_water_mark
+                MESSAGE_SIZE_ESTIMATOR,//message_size_estimator
+                SINGLE_EVENTEXECUTOR_PER_GROUP//single_eventexecutor_per_group
+        );
     }
 
     protected Map<ChannelOption<?>, Object> getOptions(

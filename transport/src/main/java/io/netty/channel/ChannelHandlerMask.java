@@ -180,6 +180,12 @@ final class ChannelHandlerMask {
      * {@link Skip} and simply pass the event through to the next handler, which reverses the behavior of the
      * supertype.
      * </p>
+     * <p>
+     *     指示ChannelPandler中不会调用ChannelHandler中带注释的事件处理程序方法，因此只有在ChannelHandler方法除了转发到管道中的下一个ChannelHandler之外什么都不做的时候才能使用它。
+     * </p>
+     * <p>
+     *    请注意，此批注不是继承的。 如果用户覆盖使用ChannelHandlerMask.Skip注释的方法，则不会再跳过该方法。 类似地，用户可以覆盖未使用ChannelHandlerMask.Skip注释的方法，并简单地将事件传递给下一个处理程序，从而反转超类型的行为。
+     * </p>
      */
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)

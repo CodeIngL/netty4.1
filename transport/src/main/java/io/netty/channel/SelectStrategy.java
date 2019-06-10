@@ -27,14 +27,17 @@ public interface SelectStrategy {
 
     /**
      * Indicates a blocking select should follow.
+     * 表示应该遵循阻塞选择。
      */
     int SELECT = -1;
     /**
      * Indicates the IO loop should be retried, no blocking select to follow directly.
+     * 表示应重试IO循环，紧紧跟着的是非阻塞的select。
      */
     int CONTINUE = -2;
     /**
      * Indicates the IO loop to poll for new events without blocking.
+     * 表示要在不阻塞的情况下轮询新事件的IO循环
      */
     int BUSY_WAIT = -3;
 
@@ -47,6 +50,7 @@ public interface SelectStrategy {
      * @return {@link #SELECT} if the next step should be blocking select {@link #CONTINUE} if
      *         the next step should be to not select but rather jump back to the IO loop and try
      *         again. Any value >= 0 is treated as an indicator that work needs to be done.
+     *         {@link #SELECT}如果下一步应该阻止SELECT {@link #CONTINUE}，如果下一步应该是不选择，而是跳回IO循环再试一次。 任何值> = 0都被视为需要完成工作的指标。
      */
     int calculateStrategy(IntSupplier selectSupplier, boolean hasTasks) throws Exception;
 }

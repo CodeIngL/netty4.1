@@ -185,6 +185,8 @@ public interface ChannelHandler {
     /**
      * Gets called after the {@link ChannelHandler} was removed from the actual context and it doesn't handle events
      * anymore.
+     * <p>
+     *     从实际上下文中删除ChannelHandler后调用它，它不再处理事件。
      */
     void handlerRemoved(ChannelHandlerContext ctx) throws Exception;
 
@@ -208,6 +210,15 @@ public interface ChannelHandler {
      * <p>
      * This annotation is provided for documentation purpose, just like
      * <a href="http://www.javaconcurrencyinpractice.com/annotations/doc/">the JCIP annotations</a>.
+     *
+     * <p>
+     *     表示可以在没有竞争条件的情况下多次将带注解的{@link ChannelHandler}的同一实例添加到一个或多个{@link ChannelPipeline}s。
+     * <p>
+     *     如果未指定此注解，则每次将其添加到pipeline时都必须创建新的处理程序实例，因为它具有非共享状态，例如成员变量。
+     * <p>
+     *     此注解仅用于文档目的，就像JCIP注解一样
+     *
+     *
      */
     @Inherited
     @Documented

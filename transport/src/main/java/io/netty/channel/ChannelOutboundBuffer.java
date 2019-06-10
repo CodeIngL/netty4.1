@@ -48,6 +48,17 @@ import static java.lang.Math.min;
  * <li>{@link #getUserDefinedWritability(int)} and {@link #setUserDefinedWritability(int, boolean)}</li>
  * </ul>
  * </p>
+ *
+ * <p>
+ * （仅限传输实现程序）AbstractChannel用于存储其挂起的出站写入请求的内部数据结构。
+ * <p>
+ * 所有方法都必须由I/O线程的传输实现调用，但以下方法除外：
+ *
+ * <ul>
+ * <li>{@link #size()} and {@link #isEmpty()}</li>
+ * <li>{@link #isWritable()}</li>
+ * <li>{@link #getUserDefinedWritability(int)} and {@link #setUserDefinedWritability(int, boolean)}</li>
+ * </ul>
  */
 public final class ChannelOutboundBuffer {
     // Assuming a 64-bit JVM:
@@ -57,6 +68,13 @@ public final class ChannelOutboundBuffer {
     //  - 2 int fields
     //  - 1 boolean field
     //  - padding
+    // Assuming a 64-bit JVM:
+    //  - 16 bytes 对象头
+    //  - 8 引用字段
+    //  - 2 long 字段
+    //  - 2 int 字段
+    //  - 1 boolean 字段
+    //  - 填充
     static final int CHANNEL_OUTBOUND_BUFFER_ENTRY_OVERHEAD =
             SystemPropertyUtil.getInt("io.netty.transport.outboundBufferEntrySizeOverhead", 96);
 
@@ -74,12 +92,16 @@ public final class ChannelOutboundBuffer {
     // Entry(flushedEntry) --> ... Entry(unflushedEntry) --> ... Entry(tailEntry)
     //
     // The Entry that is the first in the linked-list structure that was flushed
+    // Entry是刷新的链表结构中的第一个
     private Entry flushedEntry;
     // The Entry which is the first unflushed in the linked-list structure
+    // Entry是链表结构中第一个未刷新的
     private Entry unflushedEntry;
     // The Entry which represents the tail of the buffer
+    // Entry表示缓冲区的尾部
     private Entry tailEntry;
     // The number of flushed entries that are not written yet
+    // 尚未写入的刷新条目数
     private int flushed;
 
     private int nioBufferCount;
@@ -108,6 +130,9 @@ public final class ChannelOutboundBuffer {
     /**
      * Add given message to this {@link ChannelOutboundBuffer}. The given {@link ChannelPromise} will be notified once
      * the message was written.
+     * <p>
+     *     将给定消息添加到此{@link ChannelOutboundBuffer}。 写入消息后，将通知给定的{@link ChannelPromise}
+     * </p>
      */
     public void addMessage(Object msg, int size, ChannelPromise promise) {
         Entry entry = Entry.newInstance(msg, size, total(msg), promise);
@@ -124,12 +149,17 @@ public final class ChannelOutboundBuffer {
 
         // increment pending bytes after adding message to the unflushed arrays.
         // See https://github.com/netty/netty/issues/1619
+        // 将消息添加到未刷新的数组后增加挂起的字节。
+        // 请参阅https://github.com/netty/netty/issues/1619
         incrementPendingOutboundBytes(entry.pendingSize, false);
     }
 
     /**
      * Add a flush to this {@link ChannelOutboundBuffer}. This means all previous added messages are marked as flushed
      * and so you will be able to handle them.
+     * <p>
+     *     向此{@link ChannelOutboundBuffer}添加刷新。 这意味着所有以前添加的消息都标记为已刷新，因此您将能够处理它们
+     * </p>
      */
     public void addFlush() {
         // There is no need to process all entries if there was already a flush before and no new messages
@@ -143,7 +173,7 @@ public final class ChannelOutboundBuffer {
                 flushedEntry = entry;
             }
             do {
-                flushed ++;
+                flushed++;
                 if (!entry.promise.setUncancellable()) {
                     // Was cancelled so make sure we free up memory and notify about the freed bytes
                     int pending = entry.cancel();
@@ -171,7 +201,9 @@ public final class ChannelOutboundBuffer {
         }
 
         long newWriteBufferSize = TOTAL_PENDING_SIZE_UPDATER.addAndGet(this, size);
+        //新的大小大于高水位
         if (newWriteBufferSize > channel.config().getWriteBufferHighWaterMark()) {
+            //设置不可用
             setUnwritable(invokeLater);
         }
     }
@@ -222,6 +254,7 @@ public final class ChannelOutboundBuffer {
 
     /**
      * Return the current message flush progress.
+     *
      * @return {@code 0} if nothing was flushed before for the current message or there is no current message
      */
     public long currentProgress() {
@@ -314,7 +347,7 @@ public final class ChannelOutboundBuffer {
     }
 
     private void removeEntry(Entry e) {
-        if (-- flushed == 0) {
+        if (--flushed == 0) {
             // processed everything
             flushedEntry = null;
             if (e == tailEntry) {
@@ -331,7 +364,7 @@ public final class ChannelOutboundBuffer {
      * This operation assumes all messages in this buffer is {@link ByteBuf}.
      */
     public void removeBytes(long writtenBytes) {
-        for (;;) {
+        for (; ; ) {
             Object msg = current();
             if (!(msg instanceof ByteBuf)) {
                 assert writtenBytes == 0;
@@ -392,6 +425,7 @@ public final class ChannelOutboundBuffer {
      * {@link AbstractChannel#doWrite(ChannelOutboundBuffer)}.
      * Refer to {@link NioSocketChannel#doWrite(ChannelOutboundBuffer)} for an example.
      * </p>
+     *
      * @param maxCount The maximum amount of buffers that will be added to the return value.
      * @param maxBytes A hint toward the maximum number of bytes to include as part of the return value. Note that this
      *                 value maybe exceeded because we make a best effort to include at least 1 {@link ByteBuffer}
@@ -524,6 +558,9 @@ public final class ChannelOutboundBuffer {
      * not exceed the write watermark of the {@link Channel} and
      * no {@linkplain #setUserDefinedWritability(int, boolean) user-defined writability flag} has been set to
      * {@code false}.
+     * <p>
+     *     当且仅当未决字节总数未超过Channel的写水印并且没有用户定义的可写标志设置为false时，返回true
+     * </p>
      */
     public boolean isWritable() {
         return unwritable == 0;
@@ -550,7 +587,7 @@ public final class ChannelOutboundBuffer {
 
     private void setUserDefinedWritability(int index) {
         final int mask = ~writabilityMask(index);
-        for (;;) {
+        for (; ; ) {
             final int oldValue = unwritable;
             final int newValue = oldValue & mask;
             if (UNWRITABLE_UPDATER.compareAndSet(this, oldValue, newValue)) {
@@ -564,7 +601,7 @@ public final class ChannelOutboundBuffer {
 
     private void clearUserDefinedWritability(int index) {
         final int mask = writabilityMask(index);
-        for (;;) {
+        for (; ; ) {
             final int oldValue = unwritable;
             final int newValue = oldValue | mask;
             if (UNWRITABLE_UPDATER.compareAndSet(this, oldValue, newValue)) {
@@ -584,7 +621,7 @@ public final class ChannelOutboundBuffer {
     }
 
     private void setWritable(boolean invokeLater) {
-        for (;;) {
+        for (; ; ) {
             final int oldValue = unwritable;
             final int newValue = oldValue & ~1;
             if (UNWRITABLE_UPDATER.compareAndSet(this, oldValue, newValue)) {
@@ -597,7 +634,7 @@ public final class ChannelOutboundBuffer {
     }
 
     private void setUnwritable(boolean invokeLater) {
-        for (;;) {
+        for (; ; ) {
             final int oldValue = unwritable;
             final int newValue = oldValue | 1;
             if (UNWRITABLE_UPDATER.compareAndSet(this, oldValue, newValue)) {
@@ -654,7 +691,7 @@ public final class ChannelOutboundBuffer {
 
         try {
             inFail = true;
-            for (;;) {
+            for (; ; ) {
                 if (!remove0(cause, notify)) {
                     break;
                 }
@@ -821,6 +858,14 @@ public final class ChannelOutboundBuffer {
             this.handle = handle;
         }
 
+        /**
+         * 构建一个新的Entry
+         * @param msg
+         * @param size
+         * @param total
+         * @param promise
+         * @return
+         */
         static Entry newInstance(Object msg, int size, long total, ChannelPromise promise) {
             Entry entry = RECYCLER.get();
             entry.msg = msg;

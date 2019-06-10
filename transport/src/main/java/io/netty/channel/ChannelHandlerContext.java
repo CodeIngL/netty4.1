@@ -121,6 +121,29 @@ import java.nio.channels.Channels;
  * {@link ChannelPipeline} to find out more about inbound and outbound operations,
  * what fundamental differences they have, how they flow in a  pipeline,  and how to handle
  * the operation in your application.
+ *
+ * <p>
+ *     使ChannelHandler能够与其ChannelPipeline和其他处理程序进行交互。 除此之外，处理程序还可以通知ChannelPipeline中的下一个ChannelHandler，并动态修改它所属的ChannelPipeline。
+ * </p>
+ * <p>
+ *     您可以通过调用此处提供的各种方法之一来通知同一ChannelPipeline中最近的处理程序。 请参阅ChannelPipeline以了解事件的流程
+ * </p>
+ * <p>
+ *     您可以通过调用pipeline（）获取您的处理程序所属的ChannelPipeline。 非平凡的应用程序可以在运行时动态地插入，移除或替换管道中的处理程序。
+ * </p>
+ * <p>
+ *     您可以保留ChannelHandlerContext供以后使用，例如在处理程序方法之外触发事件，甚至可以从不同的线程触发。
+ * </p>
+ * <p>
+ *     attr（AttributeKey）允许您存储和访问与处理程序及其上下文相关的有状态信息。 请参阅ChannelHandler以了解管理有状态信息的各种推荐方法。
+ * </p>
+ * <p>
+ *     请注意，ChannelHandler实例可以添加到多个ChannelPipeline。 这意味着单个ChannelHandler实例可以具有多个ChannelHandlerContext，因此如果将多个ChannelHandlerContexts多次添加到一个或多个ChannelPipelines，则可以使用不同的ChannelHandlerContexts调用该实例。
+ * 例如，以下处理程序将具有与添加到管道的次数一样多的独立AttributeKeys，无论它是多次添加到同一管道还是多次添加到不同管道：
+ * </p>
+ * <p>
+ *     请参阅ChannelHandler和ChannelPipeline以了解有关入站和出站操作的更多信息，它们具有哪些基本差异，它们如何在管道中流动以及如何在应用程序中处理操作
+ * </p>
  */
 public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvoker, ChannelOutboundInvoker {
 

@@ -205,12 +205,27 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      *   <li>{@link #deregister(ChannelPromise)}</li>
      *   <li>{@link #voidPromise()}</li>
      * </ul>
+     *
+     * <p>
+     *     不应该从用户代码调用的不安全操作。 这些方法仅用于实现实际传输，必须从I/O线程调用，但以下方法除外：
+     * </p>
+     * <ul>
+     *   <li>{@link #localAddress()}</li>
+     *   <li>{@link #remoteAddress()}</li>
+     *   <li>{@link #closeForcibly()}</li>
+     *   <li>{@link #register(EventLoop, ChannelPromise)}</li>
+     *   <li>{@link #deregister(ChannelPromise)}</li>
+     *   <li>{@link #voidPromise()}</li>
+     * </ul>
      */
     interface Unsafe {
 
         /**
          * Return the assigned {@link RecvByteBufAllocator.Handle} which will be used to allocate {@link ByteBuf}'s when
          * receiving data.
+         * <p>
+         *     返回指定的{@link RecvByteBufAllocator.Handle}，用于在接收数据时分配{@link ByteBuf}。
+         * </p>
          */
         RecvByteBufAllocator.Handle recvBufAllocHandle();
 

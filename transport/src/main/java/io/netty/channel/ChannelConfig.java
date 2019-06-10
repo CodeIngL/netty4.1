@@ -165,6 +165,9 @@ public interface ChannelConfig {
     /**
      * Returns {@link ByteBufAllocator} which is used for the channel
      * to allocate buffers.
+     * <P>
+     *     返回{@link ByteBufAllocator} ，用于channel分配缓冲区。
+     * </P>
      */
     ByteBufAllocator getAllocator();
 
@@ -187,6 +190,7 @@ public interface ChannelConfig {
     /**
      * Returns {@code true} if and only if {@link ChannelHandlerContext#read()} will be invoked automatically so that
      * a user application doesn't need to call it at all. The default value is {@code true}.
+     * 当且仅当自动调用{@link ChannelHandlerContext#read()}以便用户应用程序根本不需要调用它时，返回{@code true}。 默认值是{@code true}。
      */
     boolean isAutoRead();
 

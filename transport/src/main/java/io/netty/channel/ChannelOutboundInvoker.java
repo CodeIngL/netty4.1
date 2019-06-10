@@ -76,7 +76,7 @@ public interface ChannelOutboundInvoker {
      * Request to close the {@link Channel} and notify the {@link ChannelFuture} once the operation completes,
      * either because the operation was successful or because of
      * an error.
-     *
+     * <p>
      * After it is closed it is not possible to reuse it again.
      * <p>
      * This will result in having the
@@ -95,14 +95,13 @@ public interface ChannelOutboundInvoker {
      * {@link ChannelOutboundHandler#deregister(ChannelHandlerContext, ChannelPromise)}
      * method called of the next {@link ChannelOutboundHandler} contained in the {@link ChannelPipeline} of the
      * {@link Channel}.
-     *
      */
     ChannelFuture deregister();
 
     /**
      * Request to bind to the given {@link SocketAddress} and notify the {@link ChannelFuture} once the operation
      * completes, either because the operation was successful or because of an error.
-     *
+     * <p>
      * The given {@link ChannelPromise} will be notified.
      * <p>
      * This will result in having the
@@ -115,7 +114,7 @@ public interface ChannelOutboundInvoker {
     /**
      * Request to connect to the given {@link SocketAddress} and notify the {@link ChannelFuture} once the operation
      * completes, either because the operation was successful or because of an error.
-     *
+     * <p>
      * The given {@link ChannelFuture} will be notified.
      *
      * <p>
@@ -134,7 +133,7 @@ public interface ChannelOutboundInvoker {
      * Request to connect to the given {@link SocketAddress} while bind to the localAddress and notify the
      * {@link ChannelFuture} once the operation completes, either because the operation was successful or because of
      * an error.
-     *
+     * <p>
      * The given {@link ChannelPromise} will be notified and also returned.
      * <p>
      * This will result in having the
@@ -147,7 +146,7 @@ public interface ChannelOutboundInvoker {
     /**
      * Request to disconnect from the remote peer and notify the {@link ChannelFuture} once the operation completes,
      * either because the operation was successful or because of an error.
-     *
+     * <p>
      * The given {@link ChannelPromise} will be notified.
      * <p>
      * This will result in having the
@@ -161,7 +160,7 @@ public interface ChannelOutboundInvoker {
      * Request to close the {@link Channel} and notify the {@link ChannelFuture} once the operation completes,
      * either because the operation was successful or because of
      * an error.
-     *
+     * <p>
      * After it is closed it is not possible to reuse it again.
      * The given {@link ChannelPromise} will be notified.
      * <p>
@@ -176,7 +175,7 @@ public interface ChannelOutboundInvoker {
      * Request to deregister from the previous assigned {@link EventExecutor} and notify the
      * {@link ChannelFuture} once the operation completes, either because the operation was successful or because of
      * an error.
-     *
+     * <p>
      * The given {@link ChannelPromise} will be notified.
      * <p>
      * This will result in having the
@@ -197,6 +196,14 @@ public interface ChannelOutboundInvoker {
      * {@link ChannelOutboundHandler#read(ChannelHandlerContext)}
      * method called of the next {@link ChannelOutboundHandler} contained in the {@link ChannelPipeline} of the
      * {@link Channel}.
+     * <p>
+     * 请求将数据从{@link Channel}读入第一个入站缓冲区，如果读取了数据，则触发{@link ChannelInboundHandler#channelRead(ChannelHandlerContext, Object)}事件，
+     * 并触发{@link ChannelInboundHandler#channelReadComplete(ChannelHandlerContext) channelReadComplete}事件，以便处理程序可以决定继续读取。
+     * 如果已经有挂起的读操作，则此方法不执行任何操作。
+     * </p>
+     * <p>
+     * 这将导致调用{@link ChannelOutboundHandler#read(ChannelHandlerContext)}方法，该方法包含在{@link Channel}的{@link ChannelPipeline}中的下一个{@link ChannelOutboundHandler}
+     * </p>
      */
     ChannelOutboundInvoker read();
 

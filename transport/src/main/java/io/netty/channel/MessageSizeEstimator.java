@@ -18,6 +18,9 @@ package io.netty.channel;
 /**
  * Responsible to estimate the size of a message. The size represents approximately how much memory the message will
  * reserve in memory.
+ * <p>
+ *     负责估计message的大小。 大小表示消息将在内存中保留多少内存
+ * </p>
  */
 public interface MessageSizeEstimator {
 
@@ -30,6 +33,7 @@ public interface MessageSizeEstimator {
 
         /**
          * Calculate the size of the given message.
+         * 计算给定的消息大小
          *
          * @param msg       The message for which the size should be calculated
          * @return size     The size in bytes. The returned size must be >= 0

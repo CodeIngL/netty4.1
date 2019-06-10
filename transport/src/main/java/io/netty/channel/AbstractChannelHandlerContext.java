@@ -472,6 +472,12 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return deregister(newPromise());
     }
 
+    /**
+     * bind任务
+     * @param localAddress
+     * @param promise
+     * @return
+     */
     @Override
     public ChannelFuture bind(final SocketAddress localAddress, final ChannelPromise promise) {
         if (localAddress == null) {
@@ -497,6 +503,11 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return promise;
     }
 
+    /**
+     * 进行绑定
+     * @param localAddress
+     * @param promise
+     */
     private void invokeBind(SocketAddress localAddress, ChannelPromise promise) {
         if (invokeHandler()) {
             try {

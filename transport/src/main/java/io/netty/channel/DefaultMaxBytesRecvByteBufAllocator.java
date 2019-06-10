@@ -27,6 +27,9 @@ import java.util.Map.Entry;
 /**
  * The {@link RecvByteBufAllocator} that yields a buffer size prediction based upon decrementing the value from
  * the max bytes per read.
+ * <p>
+ *     RecvByteBufAllocator，根据每次读取的最大字节数减少值，产生对要分配的缓冲区大小预测
+ * </p>
  */
 public class DefaultMaxBytesRecvByteBufAllocator implements MaxBytesRecvByteBufAllocator {
     private volatile int maxBytesPerRead;
@@ -49,6 +52,10 @@ public class DefaultMaxBytesRecvByteBufAllocator implements MaxBytesRecvByteBufA
             return alloc.ioBuffer(guess());
         }
 
+        /**
+         * 猜测要分配多大缓冲区
+         * @return
+         */
         @Override
         public int guess() {
             return Math.min(individualReadMax, bytesToRead);

@@ -23,6 +23,9 @@ import java.util.Queue;
 /**
  * This implementation allows to register {@link ChannelFuture} instances which will get notified once some amount of
  * data was written and so a checkpoint was reached.
+ *
+ * 这个实现允许注册{@link ChannelFuture}实例，一旦写入了一定数量的数据就会得到通知，所以达到了一个检查点。
+ *
  */
 public final class ChannelFlushPromiseNotifier {
 

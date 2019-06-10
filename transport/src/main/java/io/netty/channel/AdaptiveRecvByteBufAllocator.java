@@ -31,6 +31,15 @@ import static java.lang.Math.min;
  * number of readable bytes if the read operation was not able to fill a certain
  * amount of the allocated buffer two times consecutively.  Otherwise, it keeps
  * returning the same prediction.
+ *
+ * <p>
+ *     {@link RecvByteBufAllocator}自动增加和减少反馈时预测的缓冲区大小。
+ * </p>
+ * <p>
+ *    如果先前的读取完全填充了分配的缓冲区，它会逐渐增加预期的可读字节数。
+ *    如果读取操作不能连续两次填充一定量的分配缓冲区，则逐渐减少预期的可读字节数。
+ *    否则，它会继续返回相同的预测
+ * </p>
  */
 public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufAllocator {
 
@@ -53,6 +62,7 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
             sizeTable.add(i);
         }
 
+        //[16,512),每16递增，512,2048....Int MAXVALUE
         SIZE_TABLE = new int[sizeTable.size()];
         for (int i = 0; i < SIZE_TABLE.length; i ++) {
             SIZE_TABLE[i] = sizeTable.get(i);
@@ -89,6 +99,9 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
         }
     }
 
+    /**
+     * 处理器
+     */
     private final class HandleImpl extends MaxMessageHandle {
         private final int minIndex;
         private final int maxIndex;
@@ -143,14 +156,20 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
         }
     }
 
+    //预期缓冲区大小的包含下限
     private final int minIndex;
+    //预期缓冲区大小的包含上限
     private final int maxIndex;
+    //没有收到反馈时的初始缓冲区大小
     private final int initial;
 
     /**
      * Creates a new predictor with the default parameters.  With the default
      * parameters, the expected buffer size starts from {@code 1024}, does not
      * go down below {@code 64}, and does not go up above {@code 65536}.
+     * <p>
+     *     使用默认参数创建新的预测变量。 使用默认参数时，预期的缓冲区大小从{@code 1024}开始，不会低于{@code 64}，并且不会超过{@code 65536}。
+     * </p>
      */
     public AdaptiveRecvByteBufAllocator() {
         this(DEFAULT_MINIMUM, DEFAULT_INITIAL, DEFAULT_MAXIMUM);

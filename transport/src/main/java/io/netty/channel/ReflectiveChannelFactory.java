@@ -23,9 +23,15 @@ import java.lang.reflect.Constructor;
 
 /**
  * A {@link ChannelFactory} that instantiates a new {@link Channel} by invoking its default constructor reflectively.
+ * <p>
+ * 一个{@link ChannelFactory}，它通过反射调用默认构造函数来实例化一个新的{@link Channel}。
+ * 这是一种最为常见的策略。
  */
 public class ReflectiveChannelFactory<T extends Channel> implements ChannelFactory<T> {
 
+    /**
+     * channel实例的构造函数
+     */
     private final Constructor<? extends T> constructor;
 
     public ReflectiveChannelFactory(Class<? extends T> clazz) {
@@ -38,6 +44,10 @@ public class ReflectiveChannelFactory<T extends Channel> implements ChannelFacto
         }
     }
 
+    /**
+     * 通过反射完成channel实例的创建
+     * @return
+     */
     @Override
     public T newChannel() {
         try {
