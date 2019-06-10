@@ -59,11 +59,18 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
 
         private final List<Object> readBuf = new ArrayList<Object>();
 
+        /**
+         * read操作
+         */
         @Override
         public void read() {
+            //确定在事件循环中
             assert eventLoop().inEventLoop();
+            //获得channel的配置项
             final ChannelConfig config = config();
+            //获得channel的pipeline
             final ChannelPipeline pipeline = pipeline();
+            //
             final RecvByteBufAllocator.Handle allocHandle = unsafe().recvBufAllocHandle();
             allocHandle.reset(config);
 
@@ -81,25 +88,27 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                             break;
                         }
 
+                        //增加消息阅读
                         allocHandle.incMessagesRead(localRead);
                     } while (allocHandle.continueReading());
                 } catch (Throwable t) {
                     exception = t;
                 }
 
+                //大小
                 int size = readBuf.size();
                 for (int i = 0; i < size; i ++) {
                     readPending = false;
-                    pipeline.fireChannelRead(readBuf.get(i));
+                    pipeline.fireChannelRead(readBuf.get(i)); //触发read操作
                 }
                 readBuf.clear();
                 allocHandle.readComplete();
-                pipeline.fireChannelReadComplete();
+                pipeline.fireChannelReadComplete();//触发读取完成操作
 
                 if (exception != null) {
                     closed = closeOnReadError(exception);
 
-                    pipeline.fireExceptionCaught(exception);
+                    pipeline.fireExceptionCaught(exception);//触发异常操作
                 }
 
                 if (closed) {
@@ -115,6 +124,12 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                 // * The user called Channel.read() or ChannelHandlerContext.read() in channelReadComplete(...) method
                 //
                 // See https://github.com/netty/netty/issues/2254
+                // 检查是否有尚未处理的readPending。
+                //这可能有两个原因：
+                // *用户在channelRead（...）方法中调用Channel.read()或ChannelHandlerContext.read()
+                // *用户在channelReadComplete（...）方法中调用Channel.read()或ChannelHandlerContext.read()
+                //
+                //请参阅https://github.com/netty/netty/issues/2254
                 if (!readPending && !config.isAutoRead()) {
                     removeReadOp();
                 }
@@ -189,6 +204,8 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
 
     /**
      * Read messages into the given array and return the amount which was read.
+     * <p>
+     *     将消息读入给定数组并返回读取的数量。
      */
     protected abstract int doReadMessages(List<Object> buf) throws Exception;
 

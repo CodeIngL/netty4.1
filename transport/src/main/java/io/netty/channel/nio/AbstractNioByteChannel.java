@@ -89,6 +89,11 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         return isInputShutdown0() && (inputClosedSeenErrorOnRead || !isAllowHalfClosure(config));
     }
 
+    /**
+     * 允许半关闭状态
+     * @param config
+     * @return
+     */
     private static boolean isAllowHalfClosure(ChannelConfig config) {
         return config instanceof SocketChannelConfig &&
                 ((SocketChannelConfig) config).isAllowHalfClosure();
@@ -128,15 +133,22 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
             }
         }
 
+        /**
+         * 普通的socketChannel处理逻辑
+         */
         @Override
         public final void read() {
+            //获得channelConfig
             final ChannelConfig config = config();
             if (shouldBreakReadReady(config)) {
                 clearReadPending();
                 return;
             }
+            //pipeline
             final ChannelPipeline pipeline = pipeline();
+            //ByteBuf分配器
             final ByteBufAllocator allocator = config.getAllocator();
+            //获得处理器，并重置
             final RecvByteBufAllocator.Handle allocHandle = recvBufAllocHandle();
             allocHandle.reset(config);
 
@@ -144,15 +156,18 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
             boolean close = false;
             try {
                 do {
+                    //分配ByteBuf
                     byteBuf = allocHandle.allocate(allocator);
                     allocHandle.lastBytesRead(doReadBytes(byteBuf));
-                    if (allocHandle.lastBytesRead() <= 0) {
+                    if (allocHandle.lastBytesRead() <= 0) { //非正常情况处理
+                        //没有读到，释放缓冲区。
                         // nothing was read. release the buffer.
                         byteBuf.release();
                         byteBuf = null;
                         close = allocHandle.lastBytesRead() < 0;
                         if (close) {
                             // There is nothing left to read as we received an EOF.
+                            // 当我们收到EOF时，没有什么可读的。
                             readPending = false;
                         }
                         break;
@@ -160,12 +175,13 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
 
                     allocHandle.incMessagesRead(1);
                     readPending = false;
+                    //读到数据入栈，由相应的处理器处理
                     pipeline.fireChannelRead(byteBuf);
                     byteBuf = null;
                 } while (allocHandle.continueReading());
 
-                allocHandle.readComplete();
-                pipeline.fireChannelReadComplete();
+                allocHandle.readComplete(); //完成读
+                pipeline.fireChannelReadComplete();//触发读完成事件
 
                 if (close) {
                     closeOnRead(pipeline);
@@ -309,6 +325,8 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
 
     /**
      * Read bytes into the given {@link ByteBuf} and return the amount.
+     * <p>
+     *     将字节读入给定的{@link ByteBuf}并返回数量值
      */
     protected abstract int doReadBytes(ByteBuf buf) throws Exception;
 

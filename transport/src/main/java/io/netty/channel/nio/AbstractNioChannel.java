@@ -164,6 +164,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
     /**
      * Set read pending to {@code false}.
+     * 将读取挂起设置为{@code false}。
      */
     protected final void clearReadPending() {
         if (isRegistered()) {
@@ -378,11 +379,16 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         return loop instanceof NioEventLoop;
     }
 
+    /**
+     * 注册
+     * @throws Exception
+     */
     @Override
     protected void doRegister() throws Exception {
         boolean selected = false;
         for (;;) {
             try {
+                //nio注册获得selectionKey,attachment:比如NioServerChannel
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;
             } catch (CancelledKeyException e) {

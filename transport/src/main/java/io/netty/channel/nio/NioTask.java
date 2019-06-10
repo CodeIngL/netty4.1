@@ -21,6 +21,8 @@ import java.nio.channels.Selector;
 
 /**
  * An arbitrary task that can be executed by {@link NioEventLoop} when a {@link SelectableChannel} becomes ready.
+ * <p>
+ *     当{@link SelectableChannel}准备就绪时，{@link NioEventLoop}可以执行的任意任务。
  *
  * @see NioEventLoop#register(SelectableChannel, int, NioTask)
  */
