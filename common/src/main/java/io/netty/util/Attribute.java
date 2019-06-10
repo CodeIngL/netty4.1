@@ -18,6 +18,9 @@ package io.netty.util;
 /**
  * An attribute which allows to store a value reference. It may be updated atomically and so is thread-safe.
  *
+ * <p>
+ *     一个允许存储值引用的属性。 它可能是自动更新的，所以是线程安全的。
+ * </p>
  * @param <T>   the type of the value it holds.
  */
 public interface Attribute<T> {

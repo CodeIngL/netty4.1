@@ -28,6 +28,16 @@ package io.netty.util;
  * {@link ReferenceCounted}, the contained objects will also be released via {@link #release()} when the container's
  * reference count becomes 0.
  * </p>
+ * <p>
+ * 需要显式deallocation的引用计数对象。
+ * </p>
+ * <p>
+ * 实例化新的{@link ReferenceCounted}时，它以引用计数{@code 1}开始.{@link #retain()} 增加引用计数，{@link #release()}减少引用计数。
+ * 如果引用计数减少到{@code 0}，则将显式deallocation对象，并且访问解除分配的对象通常会导致访问冲突。
+ * </p>
+ * <p>
+ * 如果实现{@link ReferenceCounted}的对象是实现{@link ReferenceCounted}的其他对象的容器，则当容器的引用计数变为0时，也将通过{@link #release()}释放包含的对象。
+ * </p>
  */
 public interface ReferenceCounted {
     /**
@@ -37,11 +47,17 @@ public interface ReferenceCounted {
 
     /**
      * Increases the reference count by {@code 1}.
+     * <p>
+     * 通过{@code 1}增加引用计数。
+     * </p>
      */
     ReferenceCounted retain();
 
     /**
      * Increases the reference count by the specified {@code increment}.
+     * <p>
+     * 通过指定的{@code increment}增加引用计数。
+     * </p>
      */
     ReferenceCounted retain(int increment);
 
@@ -49,6 +65,8 @@ public interface ReferenceCounted {
      * Records the current access location of this object for debugging purposes.
      * If this object is determined to be leaked, the information recorded by this operation will be provided to you
      * via {@link ResourceLeakDetector}.  This method is a shortcut to {@link #touch(Object) touch(null)}.
+     * <p>
+     * 记录此对象的当前访问位置以进行调试。 如果确定此对象已泄露，则此操作记录的信息将通过{@link ResourceLeakDetector}提供给您。 此方法是{@link #touch(Object) touch(null)}快捷方式
      */
     ReferenceCounted touch();
 
@@ -56,12 +74,16 @@ public interface ReferenceCounted {
      * Records the current access location of this object with an additional arbitrary information for debugging
      * purposes.  If this object is determined to be leaked, the information recorded by this operation will be
      * provided to you via {@link ResourceLeakDetector}.
+     * <p>
+     * 记录此对象的当前访问位置以及用于调试目的的其他任意信息。 如果确定此对象已泄露，则此操作记录的信息将通过{@link ResourceLeakDetector}提供给您。
      */
     ReferenceCounted touch(Object hint);
 
     /**
      * Decreases the reference count by {@code 1} and deallocates this object if the reference count reaches at
      * {@code 0}.
+     * <p>
+     * 如果引用计数达到{@code 0}，则将引用计数减{@code 1}并释放此对象。
      *
      * @return {@code true} if and only if the reference count became {@code 0} and this object has been deallocated
      */
@@ -70,6 +92,8 @@ public interface ReferenceCounted {
     /**
      * Decreases the reference count by the specified {@code decrement} and deallocates this object if the reference
      * count reaches at {@code 0}.
+     * <p>
+     * 按指定的{@code decrement}减少引用计数，如果引用计数达到{@code 0}，则释放该对象。
      *
      * @return {@code true} if and only if the reference count became {@code 0} and this object has been deallocated
      */

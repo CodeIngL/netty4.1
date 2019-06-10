@@ -21,6 +21,8 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 
 /**
  * Collection of method to handle objects that may implement {@link ReferenceCounted}.
+ * <p>
+ *     工具集合方法用于处理收集可能实现了{@link ReferenceCounted}的对象。
  */
 public final class ReferenceCountUtil {
 
@@ -70,6 +72,8 @@ public final class ReferenceCountUtil {
      * Tries to call {@link ReferenceCounted#touch(Object)} if the specified message implements
      * {@link ReferenceCounted}.  If the specified message doesn't implement {@link ReferenceCounted},
      * this method does nothing.
+     * <p>
+     *     如果指定的消息实现了ReferenceCounted，则尝试调用{@link ReferenceCounted#touch(Object)}。 如果指定的消息未实现ReferenceCounted，则此方法不执行任何操作。
      */
     @SuppressWarnings("unchecked")
     public static <T> T touch(T msg, Object hint) {
@@ -82,6 +86,8 @@ public final class ReferenceCountUtil {
     /**
      * Try to call {@link ReferenceCounted#release()} if the specified message implements {@link ReferenceCounted}.
      * If the specified message doesn't implement {@link ReferenceCounted}, this method does nothing.
+     * 尝试调用{@link ReferenceCounted#release()} 如果指定的消息对象实现了{@link ReferenceCounted}。
+     * 如果指定的消息对象没有实现{@link ReferenceCounted}，这个方法将不会做任何事情
      */
     public static boolean release(Object msg) {
         if (msg instanceof ReferenceCounted) {
