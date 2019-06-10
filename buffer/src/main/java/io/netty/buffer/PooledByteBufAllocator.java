@@ -62,6 +62,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     private static final int DEFAULT_CACHE_TRIM_INTERVAL;
     //默认缓存修剪间隔毫秒
     private static final long DEFAULT_CACHE_TRIM_INTERVAL_MILLIS;
+    //是否为所有的线程使用缓存
     private static final boolean DEFAULT_USE_CACHE_FOR_ALL_THREADS;
     // 直接内存缓存对齐，默认是0
     private static final int DEFAULT_DIRECT_MEMORY_CACHE_ALIGNMENT;
@@ -84,7 +85,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     };
 
     static {
-        //默认页大小，8*1024B
+        //默认页大小，8KB
         int defaultPageSize = SystemPropertyUtil.getInt("io.netty.allocator.pageSize", 8192);
         Throwable pageSizeFallbackCause = null;
         try {
@@ -167,6 +168,8 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
 
         // Use 1023 by default as we use an ArrayDeque as backing storage which will then allocate an internal array
         // of 1024 elements. Otherwise we would allocate 2048 and only use 1024 which is wasteful.
+        // 默认情况下使用1023，因为我们使用ArrayDeque作为后备存储，然后将分配1024个元素的内部数组。
+        // 否则我们将分配2048并且仅使用1024这是浪费
         DEFAULT_MAX_CACHED_BYTEBUFFERS_PER_CHUNK = SystemPropertyUtil.getInt(
                 "io.netty.allocator.maxCachedByteBuffersPerChunk", 1023);
 
@@ -357,6 +360,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
             throw new IllegalArgumentException("pageSize: " + pageSize + " (expected: " + MIN_PAGE_SIZE + ")");
         }
 
+        //检验一个2幂次数
         if ((pageSize & pageSize - 1) != 0) {
             throw new IllegalArgumentException("pageSize: " + pageSize + " (expected: power of 2)");
         }
