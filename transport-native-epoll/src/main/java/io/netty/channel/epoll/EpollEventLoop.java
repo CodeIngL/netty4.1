@@ -40,6 +40,9 @@ import static java.lang.Math.min;
 
 /**
  * {@link EventLoop} which uses epoll under the covers. Only works on Linux!
+ * <p>
+ *     {@link EventLoop}使用了covers下的epoll。 仅适用于Linux！
+ * </p>
  */
 class EpollEventLoop extends SingleThreadEventLoop {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(EpollEventLoop.class);

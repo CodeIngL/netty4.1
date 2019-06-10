@@ -71,6 +71,7 @@ class EpollRecvByteAllocatorHandle extends DelegatingHandle implements ExtendedH
     @Override
     public final ByteBuf allocate(ByteBufAllocator alloc) {
         // We need to ensure we always allocate a direct ByteBuf as we can only use a direct buffer to read via JNI.
+        // 我们需要确保始终分配直接的ByteBuf，因为我们只能使用直接缓冲区来通过JNI进行读取。
         preferredDirectByteBufAllocator.updateAllocator(alloc);
         return delegate().allocate(preferredDirectByteBufAllocator);
     }
