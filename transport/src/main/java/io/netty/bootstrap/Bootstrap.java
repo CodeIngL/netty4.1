@@ -108,6 +108,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
     /**
      * Connect a {@link Channel} to the remote peer.
+     * 连接远端的{@link Channel}
      */
     public ChannelFuture connect() {
         validate();
@@ -121,6 +122,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
     /**
      * Connect a {@link Channel} to the remote peer.
+     * 连接远端的Channel
      */
     public ChannelFuture connect(String inetHost, int inetPort) {
         return connect(InetSocketAddress.createUnresolved(inetHost, inetPort));
@@ -128,6 +130,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
     /**
      * Connect a {@link Channel} to the remote peer.
+     * 连接远端的Channel
      */
     public ChannelFuture connect(InetAddress inetHost, int inetPort) {
         return connect(new InetSocketAddress(inetHost, inetPort));
@@ -157,20 +160,32 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     }
 
     /**
-     * @see #connect()
+     * 业务逻辑真正连接的逻辑
+     * 解析并连接远端
+     *
+     * @see {@link #connect()}
+     *
      */
     private ChannelFuture doResolveAndConnect(final SocketAddress remoteAddress, final SocketAddress localAddress) {
+        //初始化并进行注册，初始化注册channel返回一个支持异步的future
         final ChannelFuture regFuture = initAndRegister();
+
+        //获得一下future中的channel
         final Channel channel = regFuture.channel();
 
+        //注册失败，直接返回，异步情况下，这里通常是null，因为regFuture是异步的
         if (regFuture.isDone()) {
             if (!regFuture.isSuccess()) {
                 return regFuture;
             }
+            //任务已经完成，直接连接
             return doResolveAndConnect0(channel, remoteAddress, localAddress, channel.newPromise());
         } else {
+            // 注册未来几乎总是已经完成，但以防万一。
             // Registration future is almost always fulfilled already, but just in case it's not.
+            // 还未完成，通过监听器去完成（操作完成时回调）
             final PendingRegistrationPromise promise = new PendingRegistrationPromise(channel);
+            //为future添加监听器，future完成后会回调监听器
             regFuture.addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
@@ -193,10 +208,19 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
         }
     }
 
+    /**
+     * 实际的客户端连接远程逻辑
+     * @param channel
+     * @param remoteAddress
+     * @param localAddress
+     * @param promise
+     */
     private ChannelFuture doResolveAndConnect0(final Channel channel, SocketAddress remoteAddress,
                                                final SocketAddress localAddress, final ChannelPromise promise) {
         try {
+            //获得与channel绑定的事件循环
             final EventLoop eventLoop = channel.eventLoop();
+            //获得解析
             final AddressResolver<SocketAddress> resolver = this.resolver.getResolver(eventLoop);
 
             if (!resolver.isSupported(remoteAddress) || resolver.isResolved(remoteAddress)) {
@@ -244,6 +268,7 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
         // This method is invoked before channelRegistered() is triggered.  Give user handlers a chance to set up
         // the pipeline in its channelRegistered() implementation.
+        // 在触发channelRegistered() 之前调用此方法。 为用户处理程序提供在其channelRegistered() 实现中设置管道的机会。
         final Channel channel = connectPromise.channel();
         channel.eventLoop().execute(new Runnable() {
             @Override

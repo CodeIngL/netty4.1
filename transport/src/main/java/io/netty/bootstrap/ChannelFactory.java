@@ -19,11 +19,13 @@ import io.netty.channel.Channel;
 
 /**
  * @deprecated Use {@link io.netty.channel.ChannelFactory} instead.
+ * 构建一个特定的Channel用于注册到事件循环中
  */
 @Deprecated
 public interface ChannelFactory<T extends Channel> {
     /**
      * Creates a new channel.
+     * 新建一个Channel
      */
     T newChannel();
 }
