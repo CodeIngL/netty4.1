@@ -38,6 +38,18 @@ public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
      * for example: if (rawCnt == 2 || rawCnt == 4 || (rawCnt & 1) == 0) { ...
      */
 
+    /**
+     * 实现说明：
+     *
+     * 对于更新的int字段：
+     * 偶数 =>“真实”引用计数（refCnt >>> 1）
+     * 奇数 =>“real”引用计数为0
+     *
+     * 相对于(x == y)，(x & y)似乎令人惊讶地昂贵。
+     * 因此，当检查实时（偶数）refcounts时，
+     * 此类在某些地方使用快速路径来获取最常见的低值，例如：if（rawCnt == 2 || rawCnt == 4 ||（rawCnt＆1）== 0 ）{...
+     */
+
     protected ReferenceCountUpdater() { }
 
     public static long getUnsafeOffset(Class<? extends ReferenceCounted> clz, String fieldName) {

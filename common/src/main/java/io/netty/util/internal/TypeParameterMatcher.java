@@ -53,22 +53,25 @@ public abstract class TypeParameterMatcher {
     public static TypeParameterMatcher find(
             final Object object, final Class<?> parametrizedSuperclass, final String typeParamName) {
 
+        //缓存
         final Map<Class<?>, Map<String, TypeParameterMatcher>> findCache =
                 InternalThreadLocalMap.get().typeParameterMatcherFindCache();
+        //本类
         final Class<?> thisClass = object.getClass();
 
+        //缓存处理
         Map<String, TypeParameterMatcher> map = findCache.get(thisClass);
         if (map == null) {
             map = new HashMap<String, TypeParameterMatcher>();
             findCache.put(thisClass, map);
         }
 
+        //缓存处理
         TypeParameterMatcher matcher = map.get(typeParamName);
         if (matcher == null) {
             matcher = get(find0(object, parametrizedSuperclass, typeParamName));
             map.put(typeParamName, matcher);
         }
-
         return matcher;
     }
 

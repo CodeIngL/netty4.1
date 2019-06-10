@@ -35,14 +35,16 @@ import java.util.WeakHashMap;
  * The internal data structure that stores the thread-local variables for Netty and all {@link FastThreadLocal}s.
  * Note that this class is for internal use only and is subject to change at any time.  Use {@link FastThreadLocal}
  * unless you know what you are doing.
+ * <p>
+ * 内部数据结构，用于存储Netty和所有{@link FastThreadLocal}的线程局部变量。 请注意，此类仅供内部使用，并且可能随时更改。 除非您知道自己在做什么，否则请使用{@link FastThreadLocal}。
  */
 public final class InternalThreadLocalMap extends UnpaddedInternalThreadLocalMap {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(InternalThreadLocalMap.class);
 
     private static final int DEFAULT_ARRAY_LIST_INITIAL_CAPACITY = 8;
-    private static final int STRING_BUILDER_INITIAL_SIZE;
-    private static final int STRING_BUILDER_MAX_SIZE;
+    private static final int STRING_BUILDER_INITIAL_SIZE; //初始容量
+    private static final int STRING_BUILDER_MAX_SIZE; //最大容量
 
     public static final Object UNSET = new Object();
 
@@ -68,21 +70,33 @@ public final class InternalThreadLocalMap extends UnpaddedInternalThreadLocalMap
     public static InternalThreadLocalMap get() {
         Thread thread = Thread.currentThread();
         if (thread instanceof FastThreadLocalThread) {
-            return fastGet((FastThreadLocalThread) thread);
+            return fastGet((FastThreadLocalThread) thread);//如果是FastThreadLocalThread，使用快速路径处理
         } else {
             return slowGet();
         }
     }
 
+    /**
+     * 特殊的快速路径获得线程本地变量
+     *
+     * @param thread
+     * @return
+     */
     private static InternalThreadLocalMap fastGet(FastThreadLocalThread thread) {
         InternalThreadLocalMap threadLocalMap = thread.threadLocalMap();
         if (threadLocalMap == null) {
-            thread.setThreadLocalMap(threadLocalMap = new InternalThreadLocalMap());
+            thread.setThreadLocalMap(threadLocalMap = new InternalThreadLocalMap());//构建一个新的
         }
         return threadLocalMap;
     }
 
+    /**
+     * 慢路径获得
+     *
+     * @return
+     */
     private static InternalThreadLocalMap slowGet() {
+        //使用线程自带的ThreadLocal
         ThreadLocal<InternalThreadLocalMap> slowThreadLocalMap = UnpaddedInternalThreadLocalMap.slowThreadLocalMap;
         InternalThreadLocalMap ret = slowThreadLocalMap.get();
         if (ret == null) {
@@ -105,6 +119,11 @@ public final class InternalThreadLocalMap extends UnpaddedInternalThreadLocalMap
         slowThreadLocalMap.remove();
     }
 
+    /**
+     * 获得下一个索引
+     *
+     * @return
+     */
     public static int nextVariableIndex() {
         int index = nextIndex.getAndIncrement();
         if (index < 0) {
@@ -136,42 +155,42 @@ public final class InternalThreadLocalMap extends UnpaddedInternalThreadLocalMap
         int count = 0;
 
         if (futureListenerStackDepth != 0) {
-            count ++;
+            count++;
         }
         if (localChannelReaderStackDepth != 0) {
-            count ++;
+            count++;
         }
         if (handlerSharableCache != null) {
-            count ++;
+            count++;
         }
         if (counterHashCode != null) {
-            count ++;
+            count++;
         }
         if (random != null) {
-            count ++;
+            count++;
         }
         if (typeParameterMatcherGetCache != null) {
-            count ++;
+            count++;
         }
         if (typeParameterMatcherFindCache != null) {
-            count ++;
+            count++;
         }
         if (stringBuilder != null) {
-            count ++;
+            count++;
         }
         if (charsetEncoderCache != null) {
-            count ++;
+            count++;
         }
         if (charsetDecoderCache != null) {
-            count ++;
+            count++;
         }
         if (arrayList != null) {
-            count ++;
+            count++;
         }
 
-        for (Object o: indexedVariables) {
+        for (Object o : indexedVariables) {
             if (o != UNSET) {
-                count ++;
+                count++;
             }
         }
 
@@ -284,12 +303,21 @@ public final class InternalThreadLocalMap extends UnpaddedInternalThreadLocalMap
         this.localChannelReaderStackDepth = localChannelReaderStackDepth;
     }
 
+    /**
+     * 获得索引上的变量，索引被FastThreaLocal使用
+     *
+     * @param index
+     * @return
+     */
     public Object indexedVariable(int index) {
         Object[] lookup = indexedVariables;
-        return index < lookup.length? lookup[index] : UNSET;
+        return index < lookup.length ? lookup[index] : UNSET;
     }
 
     /**
+     * <p>
+     * {@code true}当且仅当创建了一个新的线程局部变量时
+     *
      * @return {@code true} if and only if a new thread-local variable has been created
      */
     public boolean setIndexedVariable(int index, Object value) {
@@ -304,16 +332,21 @@ public final class InternalThreadLocalMap extends UnpaddedInternalThreadLocalMap
         }
     }
 
+    /**
+     * 扩容
+     * @param index
+     * @param value
+     */
     private void expandIndexedVariableTableAndSet(int index, Object value) {
         Object[] oldArray = indexedVariables;
         final int oldCapacity = oldArray.length;
         int newCapacity = index;
-        newCapacity |= newCapacity >>>  1;
-        newCapacity |= newCapacity >>>  2;
-        newCapacity |= newCapacity >>>  4;
-        newCapacity |= newCapacity >>>  8;
+        newCapacity |= newCapacity >>> 1;
+        newCapacity |= newCapacity >>> 2;
+        newCapacity |= newCapacity >>> 4;
+        newCapacity |= newCapacity >>> 8;
         newCapacity |= newCapacity >>> 16;
-        newCapacity ++;
+        newCapacity++;
 
         Object[] newArray = Arrays.copyOf(oldArray, newCapacity);
         Arrays.fill(newArray, oldCapacity, newArray.length, UNSET);

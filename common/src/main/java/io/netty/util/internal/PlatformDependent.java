@@ -253,6 +253,9 @@ public final class PlatformDependent {
     /**
      * Return {@code true} if {@code sun.misc.Unsafe} was found on the classpath and can be used for accelerated
      * direct memory access.
+     * <p>
+     *     如果在类路径中找到sun.misc.Unsafe并且可以用于加速直接内存访问，则返回true。
+     * </p>
      */
     public static boolean hasUnsafe() {
         return UNSAFE_UNAVAILABILITY_CAUSE == null;
@@ -877,6 +880,9 @@ public final class PlatformDependent {
     /**
      * Create a new {@link Queue} which is safe to use for multiple producers (different threads) and a single
      * consumer (one thread!) with the given fixes {@code capacity}.
+     * <p>
+     *     使用给定容量创建一个可安全用于多个生产者（不同线程）和单个消费者（一个线程！）的新队列。
+     * </p>
      */
     public static <T> Queue<T> newFixedMpscQueue(int capacity) {
         return hasUnsafe() ? new MpscArrayQueue<T>(capacity) : new MpscAtomicArrayQueue<T>(capacity);
