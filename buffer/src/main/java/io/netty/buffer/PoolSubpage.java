@@ -23,11 +23,13 @@ package io.netty.buffer;
  */
 final class PoolSubpage<T> implements PoolSubpageMetric {
 
+    //所属的chunk
     final PoolChunk<T> chunk;
     private final int memoryMapIdx;
     private final int runOffset;
     //页大小
     private final int pageSize;
+    //位图，其长度存在一个最大个数，也就是页/最小规格
     private final long[] bitmap;
 
     PoolSubpage<T> prev;
@@ -36,6 +38,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
     boolean doNotDestroy;
     int elemSize;
     private int maxNumElems;
+    //实际使用位图的个数
     private int bitmapLength;
     private int nextAvail;
     private int numAvail;
@@ -98,8 +101,8 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         if (elemSize != 0) {
             maxNumElems = numAvail = pageSize / elemSize; //最大的数量和可用的数量
             nextAvail = 0;
-            bitmapLength = maxNumElems >>> 6; //需要几个bit来标识
-            if ((maxNumElems & 63) != 0) { //如果有多，需要一个额外得long
+            bitmapLength = maxNumElems >>> 6; //需要几个bit来标识 2^6=64，一个long能使用64个位置
+            if ((maxNumElems & 63) != 0) { //如果有多，需要一个额外得long，上述已经得出了高位需要多少，这里至多在添加一个
                 bitmapLength++;
             }
 
@@ -135,10 +138,10 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         }
 
         final int bitmapIdx = getNextAvail();
-        int q = bitmapIdx >>> 6;
-        int r = bitmapIdx & 63;
+        int q = bitmapIdx >>> 6; //高位
+        int r = bitmapIdx & 63; //低位
         assert (bitmap[q] >>> r & 1) == 0;
-        bitmap[q] |= 1L << r;
+        bitmap[q] |= 1L << r; //变更，打上位图
 
         if (--numAvail == 0) { //没有可用的，移走
             removeFromPool();
@@ -148,6 +151,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
     }
 
     /**
+     * 释放一块内存
      * @return {@code true} if this subpage is in use.
      * {@code false} if this subpage is not used by its chunk and thus it's OK to be released.
      */
@@ -162,27 +166,31 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
 
         setNextAvail(bitmapIdx);
 
-        if (numAvail++ == 0) {
+        if (numAvail++ == 0) { //至少一个，添加到arena中
             addToPool(head);
             return true;
         }
 
-        if (numAvail != maxNumElems) {
+        if (numAvail != maxNumElems) { // 有被占用，但不是完全被占用
             return true;
         } else {
             // Subpage not in use (numAvail == maxNumElems)
             if (prev == next) {
-                // Do not remove if this subpage is the only one left in the pool.
+                // Do not remove if this subpage is the only one left in the pool. //唯一的一个，我们就不删除了
                 return true;
             }
 
-            // Remove this subpage from the pool if there are other subpages left in the pool.
+            // Remove this subpage from the pool if there are other subpages left in the pool. //删除掉这个，完全被释放的subpage
             doNotDestroy = false;
             removeFromPool();
             return false;
         }
     }
 
+    /**
+     * 添加到head上
+     * @param head
+     */
     private void addToPool(PoolSubpage<T> head) {
         assert prev == null && next == null;
         prev = head;
@@ -203,27 +211,42 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         nextAvail = bitmapIdx;
     }
 
+    /**
+     * 获得下一个可用的位置
+     * @return
+     */
     private int getNextAvail() {
+        //下一个可用的位置
         int nextAvail = this.nextAvail;
-        if (nextAvail >= 0) {
+        if (nextAvail >= 0) { //大于0
             this.nextAvail = -1;
             return nextAvail;
         }
         return findNextAvail();
     }
 
+    /**
+     * 查找下一个可用的位置
+     * @return
+     */
     private int findNextAvail() {
-        final long[] bitmap = this.bitmap;
-        final int bitmapLength = this.bitmapLength;
-        for (int i = 0; i < bitmapLength; i++) {
+        final long[] bitmap = this.bitmap; //位图
+        final int bitmapLength = this.bitmapLength; //本规格最大有效个数
+        for (int i = 0; i < bitmapLength; i++) { //遍历
             long bits = bitmap[i];
-            if (~bits != 0) {
+            if (~bits != 0) { //取反是0，说明存空位
                 return findNextAvail0(i, bits);
             }
         }
         return -1;
     }
 
+    /**
+     * 进行查找
+     * @param i
+     * @param bits
+     * @return
+     */
     private int findNextAvail0(int i, long bits) {
         final int maxNumElems = this.maxNumElems;
         final int baseVal = i << 6;
@@ -242,6 +265,11 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         return -1;
     }
 
+    /**
+     * 转换为句柄
+     * @param bitmapIdx
+     * @return
+     */
     private long toHandle(int bitmapIdx) {
         return 0x4000000000000000L | (long) bitmapIdx << 32 | memoryMapIdx;
     }

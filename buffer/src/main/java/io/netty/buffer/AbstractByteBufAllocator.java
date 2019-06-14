@@ -37,7 +37,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
     //最大组合数
     static final int DEFAULT_MAX_COMPONENTS = 16;
     //计算的阈值
-    static final int CALCULATE_THRESHOLD = 1048576 * 4; // 4 MiB page
+    static final int CALCULATE_THRESHOLD = 1048576 * 4; // 4 MiB page, 4 M
 
     static {
         ResourceLeakDetector.addExclusions(AbstractByteBufAllocator.class, "toLeakAwareBuffer");

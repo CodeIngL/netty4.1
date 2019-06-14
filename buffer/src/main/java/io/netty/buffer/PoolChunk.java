@@ -192,8 +192,11 @@ final class PoolChunk<T> implements PoolChunkMetric {
     final T memory;
     final boolean unpooled;
     final int offset;
+    //内存map
     private final byte[] memoryMap;
+    //深度map
     private final byte[] depthMap;
+    //子页pages。如果有子页会在相应的位置上放置
     private final PoolSubpage<T>[] subpages;
     /**
      * Used to determine if the requested capacity is equal to or greater than pageSize.
@@ -207,6 +210,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
     private final int maxOrder;
     private final int chunkSize;
     private final int log2ChunkSize;
+    //最大可分配子页数
     private final int maxSubpageAllocs;
     /**
      * Used to mark memory as unusable
@@ -356,7 +360,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
         //句柄
         final long handle;
         if ((normCapacity & subpageOverflowMask) != 0) { // >= pageSize
-            handle = allocateRun(normCapacity); //大于一页，使用run分配
+            handle = allocateRun(normCapacity); //大于一页，使用run分配，直接在内存块的位置
         } else {
             handle = allocateSubpage(normCapacity); //使用子页分配
         }
@@ -480,6 +484,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
         if (id < 0) {
             return id;
         }
+        //内存更新，空闲内存减少
         freeBytes -= runLength(id);
         return id;
     }
@@ -514,14 +519,14 @@ final class PoolChunk<T> implements PoolChunkMetric {
             //页大小
             final int pageSize = this.pageSize;
 
-            //减去页大小
+            //减去页大小，即使是子页也需要直接减掉
             freeBytes -= pageSize;
 
             //获得子页
             int subpageIdx = subpageIdx(id);
             PoolSubpage<T> subpage = subpages[subpageIdx];
             if (subpage == null) { //如果没有就构建，并初始化
-                //空的构建
+                //空的构建，并添加到chunk中
                 subpage = new PoolSubpage<T>(head, this, id, runOffset(id), pageSize, normCapacity);
                 subpages[subpageIdx] = subpage;
             } else { //如果有了就重新初始化话
@@ -549,8 +554,8 @@ final class PoolChunk<T> implements PoolChunkMetric {
      * @param handle handle to free
      */
     void free(long handle, ByteBuffer nioBuffer) {
-        int memoryMapIdx = memoryMapIdx(handle);
-        int bitmapIdx = bitmapIdx(handle);
+        int memoryMapIdx = memoryMapIdx(handle); //内存块的地址
+        int bitmapIdx = bitmapIdx(handle); //位图的地址，如果存在的话
 
         if (bitmapIdx != 0) { // free a subpage
             PoolSubpage<T> subpage = subpages[subpageIdx(memoryMapIdx)];

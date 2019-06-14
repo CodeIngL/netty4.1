@@ -41,6 +41,7 @@ import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
 import java.util.Locale;
 
+import static io.netty.util.CharsetUtil.UTF_8;
 import static io.netty.util.internal.MathUtil.isOutOfBounds;
 import static io.netty.util.internal.ObjectUtil.checkNotNull;
 import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
@@ -66,8 +67,7 @@ public final class ByteBufUtil {
     private static final byte WRITE_UTF_UNKNOWN = (byte) '?';
     private static final int MAX_CHAR_BUFFER_SIZE;
     private static final int THREAD_LOCAL_BUFFER_SIZE;
-    private static final int MAX_BYTES_PER_CHAR_UTF8 =
-            (int) CharsetUtil.encoder(CharsetUtil.UTF_8).maxBytesPerChar();
+    private static final int MAX_BYTES_PER_CHAR_UTF8 = (int) CharsetUtil.encoder(UTF_8).maxBytesPerChar();
 
     static final int WRITE_CHUNK_SIZE = 8192;
     static final ByteBufAllocator DEFAULT_ALLOCATOR;
@@ -77,8 +77,7 @@ public final class ByteBufUtil {
      */
     static {
         //分配类型
-        String allocType = SystemPropertyUtil.get(
-                "io.netty.allocator.type", PlatformDependent.isAndroid() ? "unpooled" : "pooled");
+        String allocType = SystemPropertyUtil.get("io.netty.allocator.type", PlatformDependent.isAndroid() ? "unpooled" : "pooled");
         allocType = allocType.toLowerCase(Locale.US).trim();
 
         ByteBufAllocator alloc;
@@ -533,7 +532,7 @@ public final class ByteBufUtil {
                 // Unwrap as the wrapped buffer may be an AbstractByteBuf and so we can use fast-path.
                 buf = buf.unwrap();
             } else {
-                byte[] bytes = seq.toString().getBytes(CharsetUtil.UTF_8);
+                byte[] bytes = seq.toString().getBytes(UTF_8);
                 buf.writeBytes(bytes);
                 return bytes.length;
             }
@@ -1233,7 +1232,7 @@ public final class ByteBufUtil {
         if (index < 0 || length < 0 || index > maxIndex - length) {
             throw new IndexOutOfBoundsException("index: " + index + " length: " + length);
         }
-        if (charset.equals(CharsetUtil.UTF_8)) {
+        if (charset.equals(UTF_8)) {
             return isUtf8(buf, index, length);
         } else if (charset.equals(CharsetUtil.US_ASCII)) {
             return isAscii(buf, index, length);

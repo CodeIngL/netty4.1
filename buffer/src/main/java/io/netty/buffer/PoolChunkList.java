@@ -119,6 +119,13 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         return false;
     }
 
+    /**
+     * list中释放chunk对应的句柄对应的缓存块
+     * @param chunk
+     * @param handle
+     * @param nioBuffer
+     * @return
+     */
     boolean free(PoolChunk<T> chunk, long handle, ByteBuffer nioBuffer) {
         chunk.free(handle, nioBuffer);
         if (chunk.usage() < minUsage) {

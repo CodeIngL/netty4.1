@@ -36,6 +36,9 @@ import static java.lang.Math.max;
 abstract class PoolArena<T> implements PoolArenaMetric {
     static final boolean HAS_UNSAFE = PlatformDependent.hasUnsafe();
 
+    /**
+     * 类型
+     */
     enum SizeClass {
         Tiny,
         Small,
@@ -359,19 +362,19 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     void free(PoolChunk<T> chunk, ByteBuffer nioBuffer, long handle, int normCapacity, PoolThreadCache cache) {
         if (chunk.unpooled) { //如果chunk不是pool的，直接简单操作
             int size = chunk.chunkSize();
-            destroyChunk(chunk);
+            destroyChunk(chunk); //销毁
             activeBytesHuge.add(-size);
             deallocationsHuge.increment();
         } else {
             //获得要释放块的规格类型
             SizeClass sizeClass = sizeClass(normCapacity);
-            //存在缓存，我们添加到线程缓存中，直接让线程缓存使用
+            //存在缓存，我们添加到线程缓存中，直接让线程缓存循环使用
             if (cache != null && cache.add(this, chunk, nioBuffer, handle, normCapacity, sizeClass)) {
                 // cached so not free it.
                 // 缓存存在因此不要释放他
                 return;
             }
-            //否则释放
+            //否则释放，对应的区域
             freeChunk(chunk, handle, sizeClass, nioBuffer, false);
         }
     }
@@ -384,7 +387,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     }
 
     /**
-     * 释放指定chunk和handle
+     * 释放chunk中句柄对应的内存区域
      * @param chunk 内存块
      * @param handle 句柄
      * @param sizeClass 类型
@@ -452,7 +455,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     int normalizeCapacity(int reqCapacity) {
         checkPositiveOrZero(reqCapacity, "reqCapacity");
 
-        if (reqCapacity >= chunkSize) { //16M，
+        if (reqCapacity >= chunkSize) { //16M，大于内存块，如果我们设定了直接的填充，我们将进行填充，使得容量规范化
             return directMemoryCacheAlignment == 0 ? reqCapacity : alignCapacity(reqCapacity);
         }
 
@@ -703,17 +706,44 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     }
 
     /**
-     * 构建一个新Chunk
-     * @param pageSize
-     * @param maxOrder
-     * @param pageShifts
-     * @param chunkSize
-     * @return
+     * 构建一个新Chunk，arena提供了构建新Chunk的功能，如果需要将构建新的chunk
+     * @param pageSize 页大小
+     * @param maxOrder 深度
+     * @param pageShifts 页移位
+     * @param chunkSize 块大小
+     * @return 新的块
      */
     protected abstract PoolChunk<T> newChunk(int pageSize, int maxOrder, int pageShifts, int chunkSize);
+
+    /**
+     * 构建一块未池化的块
+     * @param capacity
+     * @return
+     */
     protected abstract PoolChunk<T> newUnpooledChunk(int capacity);
+
+    /**
+     * 构建一个缓存区，尚未初始化，初始化是值得是我们需要使用内存和这块缓冲区进行绑定
+     * 由于分配变量非常频繁，我们需要使用对象池来完成减小对象的大量分配
+     * @param maxCapacity 最大容量
+     * @return 一个尚未初始化的缓冲区
+     */
     protected abstract PooledByteBuf<T> newByteBuf(int maxCapacity);
+
+    /**
+     * 内存copy
+     * @param src
+     * @param srcOffset
+     * @param dst
+     * @param dstOffset
+     * @param length
+     */
     protected abstract void memoryCopy(T src, int srcOffset, T dst, int dstOffset, int length);
+
+    /**
+     * 销毁一块chunk
+     * @param chunk
+     */
     protected abstract void destroyChunk(PoolChunk<T> chunk);
 
     @Override
@@ -887,9 +917,16 @@ abstract class PoolArena<T> implements PoolArenaMetric {
             return directMemoryCacheAlignment - remainder;
         }
 
+        /**
+         * 构建一个新Chunk，arena提供了构建新Chunk的功能，如果需要将构建新的chunk
+         * @param pageSize 页大小
+         * @param maxOrder 深度
+         * @param pageShifts 页移位
+         * @param chunkSize 块大小
+         * @return 新的块
+         */
         @Override
-        protected PoolChunk<ByteBuffer> newChunk(int pageSize, int maxOrder,
-                int pageShifts, int chunkSize) {
+        protected PoolChunk<ByteBuffer> newChunk(int pageSize, int maxOrder, int pageShifts, int chunkSize) {
             if (directMemoryCacheAlignment == 0) {
                 return new PoolChunk<ByteBuffer>(this, allocateDirect(chunkSize), pageSize, maxOrder, pageShifts, chunkSize, 0);
             }
