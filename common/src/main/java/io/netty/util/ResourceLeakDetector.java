@@ -606,13 +606,18 @@ public class ResourceLeakDetector<T> {
         }
     }
 
-    private static final AtomicReference<String[]> excludedMethods =
-            new AtomicReference<String[]>(EmptyArrays.EMPTY_STRINGS);
+    private static final AtomicReference<String[]> excludedMethods = new AtomicReference<String[]>(EmptyArrays.EMPTY_STRINGS);
 
+    /**
+     * 添加排除
+     * @param clz
+     * @param methodNames
+     */
     public static void addExclusions(Class clz, String... methodNames) {
         Set<String> nameSet = new HashSet<String>(Arrays.asList(methodNames));
         // Use loop rather than lookup. This avoids knowing the parameters, and doesn't have to handle
         // NoSuchMethodException.
+        // 使用循环而不是查找。 这避免了解参数，并且不必处理NoSuchMethodException。
         for (Method method : clz.getDeclaredMethods()) {
             if (nameSet.remove(method.getName()) && nameSet.isEmpty()) {
                 break;

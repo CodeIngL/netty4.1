@@ -55,7 +55,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     private Object listeners;
     /**
      * Threading - synchronized(this). We are required to hold the monitor to use Java's underlying wait()/notifyAll().
-     * 线程 - synchronized(this)。 我们需要让监视器使用Java的底层wait（）/ notifyAll（）。
+     * 线程 - synchronized(this)。 我们需要让监视器使用Java的底层wait()/notifyAll()。
      */
     private short waiters;
 

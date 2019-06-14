@@ -674,6 +674,10 @@ public final class PlatformDependent {
         }
     }
 
+    /**
+     * 统计减少的内存使用量
+     * @param capacity 容量
+     */
     private static void decrementMemoryCounter(int capacity) {
         if (DIRECT_MEMORY_COUNTER != null) {
             long usedMemory = DIRECT_MEMORY_COUNTER.addAndGet(-capacity);
