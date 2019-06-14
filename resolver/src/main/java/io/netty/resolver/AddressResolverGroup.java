@@ -43,13 +43,18 @@ public abstract class AddressResolverGroup<T extends SocketAddress> implements C
     private final Map<EventExecutor, AddressResolver<T>> resolvers =
             new IdentityHashMap<EventExecutor, AddressResolver<T>>();
 
-    protected AddressResolverGroup() { }
+    protected AddressResolverGroup() {
+    }
 
     /**
      * Returns the {@link AddressResolver} associated with the specified {@link EventExecutor}. If there's no associated
      * resolved found, this method creates and returns a new resolver instance created by
      * {@link #newResolver(EventExecutor)} so that the new resolver is reused on another
      * {@link #getResolver(EventExecutor)} call with the same {@link EventExecutor}.
+     * <p>
+     * 返回与指定的{@link EventExecutor}关联的{@link AddressResolver}。
+     * 如果找不到关联的已解析，则此方法创建并返回由{@link #newResolver(EventExecutor)} 创建的新解析程序实例，
+     * 以便在具有相同{@link EventExecutor}的另一个{@link #getResolver(EventExecutor)} 调用上重用新解析程序。
      */
     public AddressResolver<T> getResolver(final EventExecutor executor) {
         if (executor == null) {
@@ -60,6 +65,7 @@ public abstract class AddressResolverGroup<T extends SocketAddress> implements C
             throw new IllegalStateException("executor not accepting a task");
         }
 
+        //缓存操作
         AddressResolver<T> r;
         synchronized (resolvers) {
             r = resolvers.get(executor);
@@ -72,6 +78,7 @@ public abstract class AddressResolverGroup<T extends SocketAddress> implements C
                 }
 
                 resolvers.put(executor, newResolver);
+                //添加回调，终止的时候回调
                 executor.terminationFuture().addListener(new FutureListener<Object>() {
                     @Override
                     public void operationComplete(Future<Object> future) throws Exception {
@@ -98,7 +105,7 @@ public abstract class AddressResolverGroup<T extends SocketAddress> implements C
      * Closes all {@link NameResolver}s created by this group.
      */
     @Override
-    @SuppressWarnings({ "unchecked", "SuspiciousToArrayCall" })
+    @SuppressWarnings({"unchecked", "SuspiciousToArrayCall"})
     public void close() {
         final AddressResolver<T>[] rArray;
         synchronized (resolvers) {
@@ -106,7 +113,7 @@ public abstract class AddressResolverGroup<T extends SocketAddress> implements C
             resolvers.clear();
         }
 
-        for (AddressResolver<T> r: rArray) {
+        for (AddressResolver<T> r : rArray) {
             try {
                 r.close();
             } catch (Throwable t) {
