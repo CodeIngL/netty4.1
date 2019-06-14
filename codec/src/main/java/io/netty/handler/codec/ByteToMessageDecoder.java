@@ -169,6 +169,11 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                     // See:
                     // - https://github.com/netty/netty/issues/2327
                     // - https://github.com/netty/netty/issues/1764
+                    //当refCnt大于1时展开累积（通过替换它），这可能在用户使用slice().retain()或duplicate().retain()时发生。
+                    //
+                    //见：
+                    //  -  https://github.com/netty/netty/issues/2327
+                    //  -  https://github.com/netty/netty/issues/1764
                     buffer = expandCumulation(alloc, cumulation, in.readableBytes());
                     buffer.writeBytes(in);
                 } else {
