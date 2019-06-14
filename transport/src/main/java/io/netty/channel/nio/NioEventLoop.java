@@ -653,6 +653,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         // check if the set is empty and if so just return to not create garbage by
         // creating a new Iterator every time even if there is nothing to process.
         // See https://github.com/netty/netty/issues/597
+        // 检查集合是否为空，如果是，只要每次都创建一个新的迭代器，即使没有任何处理，也只返回不创建垃圾。
+        // 请参阅https://github.com/netty/netty/issues/597
         if (selectedKeys.isEmpty()) {
             return;
         }

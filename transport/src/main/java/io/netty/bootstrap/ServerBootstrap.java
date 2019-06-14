@@ -302,6 +302,9 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             // not be able to load the class because of the file limit it already reached.
             //
             // See https://github.com/netty/netty/issues/1328
+            // 计划重新启用auto-read的任务。 在我们尝试提交之前创建此Runnable非常重要，否则URLClassLoader可能无法加载该类，因为它已经达到了文件限制。
+            //
+            // 请参阅https://github.com/netty/netty/issues/1328
             enableAutoReadTask = new Runnable() {
                 @Override
                 public void run() {

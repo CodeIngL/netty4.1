@@ -62,18 +62,24 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     };
 
     private static final AtomicReferenceFieldUpdater<DefaultChannelPipeline, MessageSizeEstimator.Handle> ESTIMATOR =
-            AtomicReferenceFieldUpdater.newUpdater(
-                    DefaultChannelPipeline.class, MessageSizeEstimator.Handle.class, "estimatorHandle");
+            AtomicReferenceFieldUpdater.newUpdater(DefaultChannelPipeline.class, MessageSizeEstimator.Handle.class, "estimatorHandle");
+
+    // pipeline的首部，final，never change
     final AbstractChannelHandlerContext head;
+    // pipeline的尾部，final， never change
     final AbstractChannelHandlerContext tail;
 
+    // 与pipeline 绑定的channel
     private final Channel channel;
     private final ChannelFuture succeededFuture;
     private final VoidChannelPromise voidPromise;
+    //是否追踪资源检测
     private final boolean touch = ResourceLeakDetector.isEnabled();
 
     private Map<EventExecutorGroup, EventExecutor> childExecutors;
+    //消息大小估计
     private volatile MessageSizeEstimator.Handle estimatorHandle;
+    //第一次注册
     private boolean firstRegistration = true;
 
     /**
@@ -1329,8 +1335,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     /**
      * 头环境
      */
-    final class HeadContext extends AbstractChannelHandlerContext
-            implements ChannelOutboundHandler, ChannelInboundHandler {
+    final class HeadContext extends AbstractChannelHandlerContext implements ChannelOutboundHandler, ChannelInboundHandler {
 
         private final Unsafe unsafe;
 

@@ -57,7 +57,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     private final Channel parent;
     private final ChannelId id;
+    //构建channel绑定的unsafe
     private final Unsafe unsafe;
+    //构建channel对应的pipeline
     private final DefaultChannelPipeline pipeline;
     private final VoidChannelPromise unsafeVoidPromise = new VoidChannelPromise(this, false);
     private final CloseFuture closeFuture = new CloseFuture(this);
@@ -437,6 +439,10 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             assert !registered || eventLoop.inEventLoop();
         }
 
+        /**
+         * 为每一个私有的channel进行分配了一个接收缓存区处理器
+         * @return
+         */
         @Override
         public RecvByteBufAllocator.Handle recvBufAllocHandle() {
             if (recvHandle == null) {

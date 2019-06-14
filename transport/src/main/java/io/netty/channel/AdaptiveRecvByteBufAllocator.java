@@ -43,9 +43,9 @@ import static java.lang.Math.min;
  */
 public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufAllocator {
 
-    static final int DEFAULT_MINIMUM = 64;
-    static final int DEFAULT_INITIAL = 1024;
-    static final int DEFAULT_MAXIMUM = 65536;
+    static final int DEFAULT_MINIMUM = 64; //64B
+    static final int DEFAULT_INITIAL = 1024; //1KB
+    static final int DEFAULT_MAXIMUM = 65536; //4GB
 
     private static final int INDEX_INCREMENT = 4;
     private static final int INDEX_DECREMENT = 1;
@@ -123,6 +123,9 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
             // This helps adjust more quickly when large amounts of data is pending and can avoid going back to
             // the selector to check for more data. Going back to the selector can add significant latency for large
             // data transfers.
+            // 如果我们按照我们的要求阅读，我们应该检查是否需要增加下一个猜测的大小。
+            // 这有助于在大量数据待处理时更快地进行调整，并且可以避免返回选择器以检查更多数据。
+            // 返回选择器可能会增加大数据传输的显着延迟。
             if (bytes == attemptedBytesRead()) {
                 record(bytes);
             }
