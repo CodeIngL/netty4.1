@@ -287,6 +287,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         private final Entry<ChannelOption<?>, Object>[] childOptions;
         //子attrs
         private final Entry<AttributeKey<?>, Object>[] childAttrs;
+        //是否开启自动read功能
         private final Runnable enableAutoReadTask;
 
         ServerBootstrapAcceptor(

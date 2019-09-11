@@ -363,7 +363,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
-            //新建channel
+            //新建channel一般是使用基于反射来构建我们需要的channel
             channel = channelFactory.newChannel();
             //初始化channel，回调子类的实现，server和client有着不同的逻辑
             init(channel);
@@ -415,10 +415,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     abstract void init(Channel channel) throws Exception;
 
     /**
-     *
      * 执行绑定操作，构建任务，由注册channel的事件循环器执行绑定操作，因为注册也是通过和channel绑定的事件循环器去执行的，因此这个任务总是在
      * 的注册任务完成后才会进行，
      * 这也就是为什么下面的注释存在的原因。
+     *
      * @param regFuture
      * @param channel
      * @param localAddress
