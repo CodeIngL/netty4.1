@@ -67,6 +67,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     private volatile SocketAddress localAddress;
     private volatile SocketAddress remoteAddress;
     private volatile EventLoop eventLoop;
+    //是否已经注册
     private volatile boolean registered;
     private boolean closeInitiated;
     private Throwable initialCloseCause;
@@ -526,6 +527,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 if (!promise.setUncancellable() || !ensureOpen(promise)) {
                     return;
                 }
+                //是否是一次注册
                 boolean firstRegistration = neverRegistered;
                 doRegister();
                 neverRegistered = false;
@@ -1140,6 +1142,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      * Is called after the {@link Channel} is registered with its {@link EventLoop} as part of the register process.
      *
      * Sub-classes may override this method
+     * <p>
+     *     在Channel作为注册过程的一部分注册其EventLoop后调用。 子类可以覆盖此方法
+     * </p>
      */
     protected void doRegister() throws Exception {
         // NOOP

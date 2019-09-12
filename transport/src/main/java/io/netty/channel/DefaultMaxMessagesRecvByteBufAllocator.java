@@ -98,6 +98,7 @@ public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessa
         private final UncheckedBooleanSupplier defaultMaybeMoreSupplier = new UncheckedBooleanSupplier() {
             @Override
             public boolean get() {
+                //尝试读取等于下一次读取的内容
                 return attemptedBytesRead == lastBytesRead;
             }
         };
@@ -140,8 +141,14 @@ public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessa
             return continueReading(defaultMaybeMoreSupplier);
         }
 
+        /**
+         * 是否继续读取socket中的内容
+         * @param maybeMoreDataSupplier A supplier that determines if there maybe more data to read.
+         * @return
+         */
         @Override
         public boolean continueReading(UncheckedBooleanSupplier maybeMoreDataSupplier) {
+            //首先config应该要支持自动读配置。然后校验其他配置，比如总消息要小于一次读取的消息
             return config.isAutoRead() &&
                    (!respectMaybeMoreData || maybeMoreDataSupplier.get()) &&
                    totalMessages < maxMessagePerRead &&

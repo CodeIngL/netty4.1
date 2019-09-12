@@ -43,13 +43,19 @@ import static java.lang.Math.min;
  */
 public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufAllocator {
 
+    //默认最小分配的，64B
     static final int DEFAULT_MINIMUM = 64; //64B
+    //默认初始化1024
     static final int DEFAULT_INITIAL = 1024; //1KB
-    static final int DEFAULT_MAXIMUM = 65536; //4GB
+    //默认64KB
+    static final int DEFAULT_MAXIMUM = 65536; //64KB
 
+    //增加
     private static final int INDEX_INCREMENT = 4;
+    //减少
     private static final int INDEX_DECREMENT = 1;
 
+    //规格数组
     private static final int[] SIZE_TABLE;
 
     static {
@@ -103,10 +109,15 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
      * 处理器
      */
     private final class HandleImpl extends MaxMessageHandle {
+        //规格最小Index
         private final int minIndex;
+        //规格最大Index
         private final int maxIndex;
+        //当前Index
         private int index;
+        //下一个接收buffer大小
         private int nextReceiveBufferSize;
+        //现在要减
         private boolean decreaseNow;
 
         HandleImpl(int minIndex, int maxIndex, int initial) {
@@ -137,18 +148,26 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
             return nextReceiveBufferSize;
         }
 
+        /**
+         * 根据规格进行记录
+         * @param actualReadBytes
+         */
         private void record(int actualReadBytes) {
+            //如果实际的的读取字节小于减去1索引的位置
             if (actualReadBytes <= SIZE_TABLE[max(0, index - INDEX_DECREMENT - 1)]) {
-                if (decreaseNow) {
+                if (decreaseNow) { //如果是减，使用设置成减一的
                     index = max(index - INDEX_DECREMENT, minIndex);
+                    //使用减小的分配
                     nextReceiveBufferSize = SIZE_TABLE[index];
+                    //设置false，避免每一次都进行相减操作
                     decreaseNow = false;
                 } else {
                     decreaseNow = true;
                 }
-            } else if (actualReadBytes >= nextReceiveBufferSize) {
+            } else if (actualReadBytes >= nextReceiveBufferSize) { //如果大于，尝试调高
                 index = min(index + INDEX_INCREMENT, maxIndex);
                 nextReceiveBufferSize = SIZE_TABLE[index];
+                //避免每一次的相减的操作
                 decreaseNow = false;
             }
         }
