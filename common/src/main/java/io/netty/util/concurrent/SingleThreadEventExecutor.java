@@ -88,11 +88,14 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
             AtomicReferenceFieldUpdater.newUpdater(
                     SingleThreadEventExecutor.class, ThreadProperties.class, "threadProperties");
 
+    //任务队列
     private final Queue<Runnable> taskQueue;
 
+    //执行线程
     private volatile Thread thread;
     @SuppressWarnings("unused")
     private volatile ThreadProperties threadProperties;
+    //执行器
     private final Executor executor;
     private volatile boolean interrupted;
 
@@ -781,9 +784,11 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         if (!inEventLoop) {
             startThread();
 
-            if (isShutdown()) { //如果关闭了
+            //如果关闭了
+            if (isShutdown()) {
                 boolean reject = false;
                 try {
+                    //尝试拒绝任务，处理器已经关闭了
                     if (removeTask(task)) {
                         reject = true;
                     }
@@ -793,6 +798,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
                     // In worst case we will log on termination.
                 }
                 if (reject) {
+                    //拒绝
                     reject();
                 }
             }
@@ -919,6 +925,9 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         return false;
     }
 
+    /**
+     * 开启线程
+     */
     private void doStartThread() {
         assert thread == null;
         executor.execute(new Runnable() {

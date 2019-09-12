@@ -25,6 +25,9 @@ import java.util.concurrent.locks.LockSupport;
  * Expose helper methods which create different {@link RejectedExecutionHandler}s.
  */
 public final class RejectedExecutionHandlers {
+    /**
+     * 普通的实现用于拒绝任务
+     */
     private static final RejectedExecutionHandler REJECT = new RejectedExecutionHandler() {
         @Override
         public void rejected(Runnable task, SingleThreadEventExecutor executor) {
