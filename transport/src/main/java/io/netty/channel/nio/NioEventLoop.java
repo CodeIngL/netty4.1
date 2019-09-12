@@ -158,7 +158,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
         //提供者
         provider = selectorProvider;
-        //selector元祖
+        //selector元组
         final SelectorTuple selectorTuple = openSelector();
         //包装的selector
         selector = selectorTuple.selector;
@@ -527,7 +527,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                         // 1) Selector 在 'wakenUp.set(false)' 和
                         //    'selector.select(...)'之间出现唤醒. (BAD)
                         // 2) Selecor 在'selector.select(...)' 和
-                        //    'if (wakenUp.get()) { ... }'直接唤醒（OK)
+                        //    'if (wakenUp.get()) { ... }'之间唤醒（OK)
                         //
                         // 如果是第一中情况，'wakenUp' 设置成了true,紧接着'selector.select(...)'将立即唤醒
                         // 直到'wakenUp'在下轮循环中重新被设置成false,'wakenUp.compareAndSet(false, true)' 将会失败，因此
