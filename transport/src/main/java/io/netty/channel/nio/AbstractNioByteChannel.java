@@ -44,7 +44,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
     private static final String EXPECTED_TYPES =
             " (expected: " + StringUtil.simpleClassName(ByteBuf.class) + ", " +
-            StringUtil.simpleClassName(FileRegion.class) + ')';
+                    StringUtil.simpleClassName(FileRegion.class) + ')';
 
     private final Runnable flushTask = new Runnable() {
         @Override
@@ -59,8 +59,8 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
     /**
      * Create a new instance
      *
-     * @param parent            the parent {@link Channel} by which this instance was created. May be {@code null}
-     * @param ch                the underlying {@link SelectableChannel} on which it operates
+     * @param parent the parent {@link Channel} by which this instance was created. May be {@code null}
+     * @param ch     the underlying {@link SelectableChannel} on which it operates
      */
     protected AbstractNioByteChannel(Channel parent, SelectableChannel ch) {
         super(parent, ch, SelectionKey.OP_READ);
@@ -91,6 +91,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
 
     /**
      * 允许半关闭状态
+     *
      * @param config
      * @return
      */
@@ -116,7 +117,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         }
 
         private void handleReadException(ChannelPipeline pipeline, ByteBuf byteBuf, Throwable cause, boolean close,
-                RecvByteBufAllocator.Handle allocHandle) {
+                                         RecvByteBufAllocator.Handle allocHandle) {
             if (byteBuf != null) {
                 if (byteBuf.isReadable()) {
                     readPending = false;
@@ -206,15 +207,16 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
 
     /**
      * Write objects to the OS.
+     *
      * @param in the collection which contains objects to write.
      * @return The value that should be decremented from the write quantum which starts at
      * {@link ChannelConfig#getWriteSpinCount()}. The typical use cases are as follows:
      * <ul>
-     *     <li>0 - if no write was attempted. This is appropriate if an empty {@link ByteBuf} (or other empty content)
-     *     is encountered</li>
-     *     <li>1 - if a single call to write data was made to the OS</li>
-     *     <li>{@link ChannelUtils#WRITE_STATUS_SNDBUF_FULL} - if an attempt to write data was made to the OS, but no
-     *     data was accepted</li>
+     * <li>0 - if no write was attempted. This is appropriate if an empty {@link ByteBuf} (or other empty content)
+     * is encountered</li>
+     * <li>1 - if a single call to write data was made to the OS</li>
+     * <li>{@link ChannelUtils#WRITE_STATUS_SNDBUF_FULL} - if an attempt to write data was made to the OS, but no
+     * data was accepted</li>
      * </ul>
      * @throws Exception if an I/O exception occurs during write.
      */
@@ -227,14 +229,23 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         return doWriteInternal(in, in.current());
     }
 
+    /**
+     * 内部的写事件
+     * @param in
+     * @param msg
+     * @return
+     * @throws Exception
+     */
     private int doWriteInternal(ChannelOutboundBuffer in, Object msg) throws Exception {
         if (msg instanceof ByteBuf) {
+            //ByteBuf
             ByteBuf buf = (ByteBuf) msg;
             if (!buf.isReadable()) {
                 in.remove();
                 return 0;
             }
 
+            //
             final int localFlushedAmount = doWriteBytes(buf);
             if (localFlushedAmount > 0) {
                 in.progress(localFlushedAmount);
@@ -244,6 +255,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 return 1;
             }
         } else if (msg instanceof FileRegion) {
+            //FileRegion
             FileRegion region = (FileRegion) msg;
             if (region.transferred() >= region.count()) {
                 in.remove();
@@ -259,6 +271,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 return 1;
             }
         } else {
+            // 不支持的类型
             // Should not reach here.
             throw new Error();
         }
@@ -272,16 +285,24 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
             Object msg = in.current();
             if (msg == null) {
                 // Wrote all messages.
+                // 全部写出了，清除写事件，
                 clearOpWrite();
                 // Directly return here so incompleteWrite(...) is not called.
                 return;
             }
+            //内部写
             writeSpinCount -= doWriteInternal(in, msg);
         } while (writeSpinCount > 0);
 
         incompleteWrite(writeSpinCount < 0);
     }
 
+    /**
+     * 过滤消息，非direct消息全部转换为direct消息
+     *
+     * @param msg
+     * @return
+     */
     @Override
     protected final Object filterOutboundMessage(Object msg) {
         if (msg instanceof ByteBuf) {
@@ -320,7 +341,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
     /**
      * Write a {@link FileRegion}
      *
-     * @param region        the {@link FileRegion} from which the bytes should be written
+     * @param region the {@link FileRegion} from which the bytes should be written
      * @return amount       the amount of written bytes
      */
     protected abstract long doWriteFileRegion(FileRegion region) throws Exception;
@@ -328,13 +349,14 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
     /**
      * Read bytes into the given {@link ByteBuf} and return the amount.
      * <p>
-     *     将字节读入给定的{@link ByteBuf}并返回数量值
+     * 将字节读入给定的{@link ByteBuf}并返回数量值
      */
     protected abstract int doReadBytes(ByteBuf buf) throws Exception;
 
     /**
      * Write bytes form the given {@link ByteBuf} to the underlying {@link java.nio.channels.Channel}.
-     * @param buf           the {@link ByteBuf} from which the bytes should be written
+     *
+     * @param buf the {@link ByteBuf} from which the bytes should be written
      * @return amount       the amount of written bytes
      */
     protected abstract int doWriteBytes(ByteBuf buf) throws Exception;
@@ -353,16 +375,22 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         }
     }
 
+    /**
+     * 清除写事件
+     */
     protected final void clearOpWrite() {
         final SelectionKey key = selectionKey();
         // Check first if the key is still valid as it may be canceled as part of the deregistration
         // from the EventLoop
         // See https://github.com/netty/netty/issues/2104
+        // 首先检查key是否仍然有效，因为它可能会在EventLoop注销时被取消
+        // 请参阅https://github.com/netty/netty/issues/2104
         if (!key.isValid()) {
             return;
         }
         final int interestOps = key.interestOps();
         if ((interestOps & SelectionKey.OP_WRITE) != 0) {
+            //存在写事件，我们清除写事件
             key.interestOps(interestOps & ~SelectionKey.OP_WRITE);
         }
     }

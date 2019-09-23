@@ -610,10 +610,15 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
+    /**
+     * 处理selectKey
+     */
     private void processSelectedKeys() {
         if (selectedKeys != null) {
+            //优化的处理方式
             processSelectedKeysOptimized();
         } else {
+            //普通的处理方式
             processSelectedKeysPlain(selector.selectedKeys());
         }
     }
@@ -725,6 +730,11 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
+    /**
+     * 最终的处理选择键
+     * @param k 选择键
+     * @param ch 选择键上attach的channel
+     */
     private void processSelectedKey(SelectionKey k, AbstractNioChannel ch) {
         final AbstractNioChannel.NioUnsafe unsafe = ch.unsafe();
         //非法的
@@ -757,6 +767,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         try {
             //获得readyOps掩码
             int readyOps = k.readyOps();
+            // 首先是对connect事件的检查
+
             // We first need to call finishConnect() before try to trigger a read(...) or write(...) as otherwise
             // the NIO JDK channel implementation may throw a NotYetConnectedException.
             // 我们首先需要在尝试触发read(...) 或write(...)之前调用finishConnect（），否则NIO JDK通道实现可能会抛出NotYetConnectedException。
@@ -773,6 +785,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 unsafe.finishConnect();
             }
 
+            //其次我们观察一下是否出现写事件
+
             // Process OP_WRITE first as we may be able to write some queued buffers and so free memory.
             // 首先处理OP_WRITE，因为我们可以编写一些排队的缓冲区，因此可以释放内存。
             if ((readyOps & SelectionKey.OP_WRITE) != 0) {
@@ -781,8 +795,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 ch.unsafe().forceFlush();
             }
 
-            // Also check for readOps of 0 to workaround possible JDK bug which may otherwise lead
-            // to a spin loop
+            // 最后我们观察一下read和其他的事件
+            // Also check for readOps of 0 to workaround possible JDK bug which may otherwise lead to a spin loop
             // 同时检查readOps为0以解决可能导致旋转循环的JDK错误
             if ((readyOps & (SelectionKey.OP_READ | SelectionKey.OP_ACCEPT)) != 0 || readyOps == 0) {
                 unsafe.read();
@@ -967,8 +981,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                     // timeoutMillis elapsed without anything selected.
                     // timeoutMillis已过，未选择任何内容。重置
                     selectCnt = 1;
-                } else if (SELECTOR_AUTO_REBUILD_THRESHOLD > 0 &&
-                        selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {
+                } else if (SELECTOR_AUTO_REBUILD_THRESHOLD > 0 && selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {
                     // The code exists in an extra method to ensure the method is not too big to inline as this
                     // branch is not very likely to get hit very frequently.
                     // 代码存在于一个额外的方法中，以确保该方法不会太大而无法内联，因为此分支不太可能非常频繁地被命中。

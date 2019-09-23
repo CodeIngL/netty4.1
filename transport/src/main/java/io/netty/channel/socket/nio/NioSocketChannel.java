@@ -359,9 +359,17 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         return byteBuf.writeBytes(javaChannel(), allocHandle.attemptedBytesRead());
     }
 
+    /**
+     * 将buffer写出
+     * @param buf the {@link ByteBuf} from which the bytes should be written
+     * @return
+     * @throws Exception
+     */
     @Override
     protected int doWriteBytes(ByteBuf buf) throws Exception {
+        //可写的字节
         final int expectedWrittenBytes = buf.readableBytes();
+        //将buf的内容写入socket channel中
         return buf.readBytes(javaChannel(), expectedWrittenBytes);
     }
 
@@ -375,6 +383,8 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         // By default we track the SO_SNDBUF when ever it is explicitly set. However some OSes may dynamically change
         // SO_SNDBUF (and other characteristics that determine how much data can be written at once) so we should try
         // make a best effort to adjust as OS behavior changes.
+        // 默认情况下，我们会在显式设置时跟踪SO_SNDBUF。
+        // 但是，某些操作系统可能会动态更改SO_SNDBUF（以及确定可以一次写入多少数据的其他特性），因此我们应该尽力调整操作系统行为的变化。
         if (attempted == written) {
             if (attempted << 1 > oldMaxBytesPerGatheringWrite) {
                 ((NioSocketChannelConfig) config).setMaxBytesPerGatheringWrite(attempted << 1);
@@ -384,6 +394,11 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         }
     }
 
+    /**
+     * nio的实现
+     * @param in
+     * @throws Exception
+     */
     @Override
     protected void doWrite(ChannelOutboundBuffer in) throws Exception {
         SocketChannel ch = javaChannel();
@@ -397,6 +412,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
             }
 
             // Ensure the pending writes are made of ByteBufs only.
+            // 确保挂起的写入仅由ByteBufs构成。
             int maxBytesPerGatheringWrite = ((NioSocketChannelConfig) config).getMaxBytesPerGatheringWrite();
             ByteBuffer[] nioBuffers = in.nioBuffers(1024, maxBytesPerGatheringWrite);
             int nioBufferCnt = in.nioBufferCount();
@@ -412,6 +428,8 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
                     // Only one ByteBuf so use non-gathering write
                     // Zero length buffers are not added to nioBuffers by ChannelOutboundBuffer, so there is no need
                     // to check if the total size of all the buffers is non-zero.
+                    // 只有一个ByteBuf使用非聚集写入ChannelOutboundBuffer不会将零长度缓冲区添加到nioBuffers，
+                    // 因此无需检查所有缓冲区的总大小是否为非零。
                     ByteBuffer buffer = nioBuffers[0];
                     int attemptedBytes = buffer.remaining();
                     final int localWrittenBytes = ch.write(buffer);

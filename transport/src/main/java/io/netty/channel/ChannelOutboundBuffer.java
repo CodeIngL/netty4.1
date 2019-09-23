@@ -136,6 +136,7 @@ public final class ChannelOutboundBuffer {
      */
     public void addMessage(Object msg, int size, ChannelPromise promise) {
         Entry entry = Entry.newInstance(msg, size, total(msg), promise);
+        //添加到尾巴上
         if (tailEntry == null) {
             flushedEntry = null;
         } else {
@@ -176,7 +177,9 @@ public final class ChannelOutboundBuffer {
                 flushed++;
                 if (!entry.promise.setUncancellable()) {
                     // Was cancelled so make sure we free up memory and notify about the freed bytes
+                    // 被取消所以请确保我们释放内存并通知有关释放的字节
                     int pending = entry.cancel();
+                    //减小等待write的输出的字节大小
                     decrementPendingOutboundBytes(pending, false, true);
                 }
                 entry = entry.next;
@@ -195,11 +198,17 @@ public final class ChannelOutboundBuffer {
         incrementPendingOutboundBytes(size, true);
     }
 
+    /**
+     * 增加挂起的字节
+     * @param size
+     * @param invokeLater
+     */
     private void incrementPendingOutboundBytes(long size, boolean invokeLater) {
         if (size == 0) {
             return;
         }
 
+        //获得要写出去的缓冲区的大小
         long newWriteBufferSize = TOTAL_PENDING_SIZE_UPDATER.addAndGet(this, size);
         //新的大小大于高水位
         if (newWriteBufferSize > channel.config().getWriteBufferHighWaterMark()) {
@@ -211,6 +220,9 @@ public final class ChannelOutboundBuffer {
     /**
      * Decrement the pending bytes which will be written at some point.
      * This method is thread-safe!
+     * <p>
+     *     减少将在某个时刻写入的待处理字节。 这种方法是线程安全的！
+     * </p>
      */
     void decrementPendingOutboundBytes(long size) {
         decrementPendingOutboundBytes(size, true, true);
@@ -267,6 +279,7 @@ public final class ChannelOutboundBuffer {
 
     /**
      * Notify the {@link ChannelPromise} of the current message about writing progress.
+     * 通知当前消息的{@link ChannelPromise}有关写入进度的信息。
      */
     public void progress(long amount) {
         Entry e = flushedEntry;
@@ -283,6 +296,10 @@ public final class ChannelOutboundBuffer {
      * Will remove the current message, mark its {@link ChannelPromise} as success and return {@code true}. If no
      * flushed message exists at the time this method is called it will return {@code false} to signal that no more
      * messages are ready to be handled.
+     * <p>
+     *     将删除当前消息，将其ChannelPromise标记为成功并返回true。
+     *     如果在调用此方法时没有刷新消息，则它将返回false以表示不再准备处理消息
+     * </p>
      */
     public boolean remove() {
         Entry e = flushedEntry;
@@ -301,6 +318,7 @@ public final class ChannelOutboundBuffer {
             // only release message, notify and decrement if it was not canceled before.
             ReferenceCountUtil.safeRelease(msg);
             safeSuccess(promise);
+            //减小要等待的时间，因为有部分已经被写出来了
             decrementPendingOutboundBytes(size, false, true);
         }
 
@@ -424,6 +442,14 @@ public final class ChannelOutboundBuffer {
      * Note that the returned array is reused and thus should not escape
      * {@link AbstractChannel#doWrite(ChannelOutboundBuffer)}.
      * Refer to {@link NioSocketChannel#doWrite(ChannelOutboundBuffer)} for an example.
+     * </p>
+     * <p>
+     *     如果当前挂起的消息仅由@link ByteBuf}构成，则返回直接NIO缓冲区的数组。
+     *     {@link #nioBufferCount()} 和 {@link #nioBufferSize()} 将分别返回返回数组中的NIO缓冲区数和NIO缓冲区的可读字节总数。
+     * </p>
+     * <p>
+     *    请注意，返回的数组被重用，因此不应该逃避{@link AbstractChannel#doWrite(ChannelOutboundBuffer)}。
+     *    有关示例，请参阅{@link NioSocketChannel#doWrite(ChannelOutboundBuffer)}。
      * </p>
      *
      * @param maxCount The maximum amount of buffers that will be added to the return value.
@@ -633,6 +659,10 @@ public final class ChannelOutboundBuffer {
         }
     }
 
+    /**
+     * 设置不可用
+     * @param invokeLater
+     */
     private void setUnwritable(boolean invokeLater) {
         for (; ; ) {
             final int oldValue = unwritable;
@@ -647,8 +677,11 @@ public final class ChannelOutboundBuffer {
     }
 
     private void fireChannelWritabilityChanged(boolean invokeLater) {
+        //获得pipeline
         final ChannelPipeline pipeline = channel.pipeline();
+        //稍后调用
         if (invokeLater) {
+            //获得任务
             Runnable task = fireChannelWritabilityChangedTask;
             if (task == null) {
                 fireChannelWritabilityChangedTask = task = new Runnable() {
@@ -658,8 +691,10 @@ public final class ChannelOutboundBuffer {
                     }
                 };
             }
+            //稍后执行这个任务
             channel.eventLoop().execute(task);
         } else {
+            //立即执行
             pipeline.fireChannelWritabilityChanged();
         }
     }
@@ -674,6 +709,9 @@ public final class ChannelOutboundBuffer {
     /**
      * Returns {@code true} if there are flushed messages in this {@link ChannelOutboundBuffer} or {@code false}
      * otherwise.
+     * <p>
+     *     如果此{@link ChannelOutboundBuffer}中存在已刷新的消息，则返回true，否则返回false
+     * </p>
      */
     public boolean isEmpty() {
         return flushed == 0;
@@ -785,12 +823,17 @@ public final class ChannelOutboundBuffer {
     /**
      * Get how many bytes must be drained from the underlying buffer until {@link #isWritable()} returns {@code true}.
      * This quantity will always be non-negative. If {@link #isWritable()} is {@code true} then 0.
+     * <p>
+     *     获取必须从底层缓冲区中排出多少字节，直到{@link #isWritable()}返回true。 此数量将始终为非负数。 如果{@link #isWritable()}为true则为0。
+     * </p>
      */
     public long bytesBeforeWritable() {
         long bytes = totalPendingSize - channel.config().getWriteBufferLowWaterMark();
         // If bytes is negative we know we are writable, but if bytes is non-negative we have to check writability.
         // Note that totalPendingSize and isWritable() use different volatile variables that are not synchronized
         // together. totalPendingSize will be updated before isWritable().
+        // 如果字节为负，我们知道我们是可写的，但如果字节是非负的，我们必须检查可写性。
+        // 请注意，totalPendingSize和isWritable（）使用不同步的不同volatile变量。 totalPendingSize将在isWritable（）之前更新。
         if (bytes > 0) {
             return isWritable() ? 0 : bytes;
         }
@@ -834,6 +877,9 @@ public final class ChannelOutboundBuffer {
         boolean processMessage(Object msg) throws Exception;
     }
 
+    /**
+     * 写入缓冲区消息有该条目类进行表征
+     */
     static final class Entry {
         private static final Recycler<Entry> RECYCLER = new Recycler<Entry>() {
             @Override
