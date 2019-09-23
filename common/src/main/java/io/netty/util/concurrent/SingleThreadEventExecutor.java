@@ -766,7 +766,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     }
 
     /**
-     * 单线程执行器，执行任务，这个单线程通常是一个事件循环的承担者
+     * 单线程执行器，执行任务，这个单线程通常是一个事件循环的承担者,
+     * 但没有事件循环开启，让我们开始事件循环来开始整体流程
      * @param task
      */
     @Override
@@ -926,10 +927,11 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     }
 
     /**
-     * 开启线程
+     * 开启线程，这个是执行事件循环线程
      */
     private void doStartThread() {
         assert thread == null;
+        //执行事件循环
         executor.execute(new Runnable() {
             @Override
             public void run() {

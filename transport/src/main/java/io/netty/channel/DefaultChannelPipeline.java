@@ -1367,8 +1367,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
          * @param promise       the {@link ChannelPromise} to notify once the operation completes
          */
         @Override
-        public void bind(
-                ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise) {
+        public void bind(ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise) {
             unsafe.bind(localAddress, promise);
         }
 

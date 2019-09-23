@@ -240,8 +240,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                     public void run() {
                         //向管道添加ServerBootstrapAcceptor，对于本级来说，从职责上定位是一个监听性质的事件循环，
                         //对应事件道来，需要产生或者传递给子事件循环，子事件的相关配置，这里就能够被带下去。
-                        pipeline.addLast(new ServerBootstrapAcceptor(
-                                ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs));
+                        pipeline.addLast(new ServerBootstrapAcceptor(ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs));
                     }
                 });
             }

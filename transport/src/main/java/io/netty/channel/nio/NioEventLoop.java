@@ -293,8 +293,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         selectedKeys = selectedKeySet;
         logger.trace("instrumented a special java.util.Set into: {}", unwrappedSelector);
         //构建元祖
-        return new SelectorTuple(unwrappedSelector,
-                                 new SelectedSelectionKeySetSelector(unwrappedSelector, selectedKeySet));
+        return new SelectorTuple(unwrappedSelector, new SelectedSelectionKeySetSelector(unwrappedSelector, selectedKeySet));
     }
 
     /**
@@ -612,8 +611,10 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     private void processSelectedKeys() {
         if (selectedKeys != null) {
+            //优化的处理手段
             processSelectedKeysOptimized();
         } else {
+            //普通的处理手段
             processSelectedKeysPlain(selector.selectedKeys());
         }
     }
@@ -934,6 +935,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 }
 
                 int selectedKeys = selector.select(timeoutMillis);
+                //select数量增长
                 selectCnt ++;
 
                 if (selectedKeys != 0 || oldWakenUp || wakenUp.get() || hasTasks() || hasScheduledTasks()) {
@@ -964,11 +966,12 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
                 long time = System.nanoTime();
                 if (time - TimeUnit.MILLISECONDS.toNanos(timeoutMillis) >= currentTimeNanos) {
+                    //超出一次超时时间，我们重置
                     // timeoutMillis elapsed without anything selected.
                     // timeoutMillis已过，未选择任何内容。重置
                     selectCnt = 1;
-                } else if (SELECTOR_AUTO_REBUILD_THRESHOLD > 0 &&
-                        selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {
+                } else if (SELECTOR_AUTO_REBUILD_THRESHOLD > 0 && selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {
+                    //selector自动rebuid的阈值，当select数量大于阈值时，我们进行rebuild
                     // The code exists in an extra method to ensure the method is not too big to inline as this
                     // branch is not very likely to get hit very frequently.
                     // 代码存在于一个额外的方法中，以确保该方法不会太大而无法内联，因为此分支不太可能非常频繁地被命中。
@@ -981,15 +984,14 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             }
 
             if (selectCnt > MIN_PREMATURE_SELECTOR_RETURNS) {
+                //过早的返回
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Selector.select() returned prematurely {} times in a row for Selector {}.",
-                            selectCnt - 1, selector);
+                    logger.debug("Selector.select() returned prematurely {} times in a row for Selector {}.", selectCnt - 1, selector);
                 }
             }
         } catch (CancelledKeyException e) {
             if (logger.isDebugEnabled()) {
-                logger.debug(CancelledKeyException.class.getSimpleName() + " raised by a Selector {} - JDK bug?",
-                        selector, e);
+                logger.debug(CancelledKeyException.class.getSimpleName() + " raised by a Selector {} - JDK bug?", selector, e);
             }
             // Harmless exception - log anyway
         }

@@ -204,7 +204,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         SelectableChannel ch();
 
         /**
-         * Finish connect
+         * Finish connect，对于客户端来说，此时完成连接。
          */
         void finishConnect();
 
@@ -329,10 +329,14 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             closeIfClosed();
         }
 
+        /**
+         * 完成连接
+         */
         @Override
         public final void finishConnect() {
             // Note this method is invoked by the event loop only if the connection attempt was
             // neither cancelled nor timed out.
+            // 请注意，仅在既未取消连接也未超时的情况下，事件循环才调用此方法。
 
             assert eventLoop().inEventLoop();
 
