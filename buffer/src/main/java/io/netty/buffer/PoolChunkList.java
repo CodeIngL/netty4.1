@@ -93,7 +93,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
 
 
     /**
-     * 分配
+     * 使用chunkList尝试为我们的buf进行内存的分配
      *
      * @param buf
      * @param reqCapacity
@@ -106,11 +106,16 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
             return false;
         }
 
-        for (PoolChunk<T> cur = head; cur != null; cur = cur.next) { //从头遍历到尾
-            if (cur.allocate(buf, reqCapacity, normCapacity)) { //分配成功
-                if (cur.usage() >= maxUsage) { //使用量大于最大使用量
-                    remove(cur); //删除
-                    nextList.add(cur); //加回来
+        //从头遍历到尾
+        for (PoolChunk<T> cur = head; cur != null; cur = cur.next) {
+            // 使用其中chunk进行分配
+            if (cur.allocate(buf, reqCapacity, normCapacity)) {
+                //分配成功，如果chunk的内存使用率已经大于该chunkList设定值，我们从当前规格的list中，尝试删除他，并将移动到下一个我们设定的规格列表中。
+                if (cur.usage() >= maxUsage) {
+                    //删除当前规格中的cur
+                    remove(cur);
+                    //移动到下一个规格中
+                    nextList.add(cur);
                 }
                 return true;
             }
@@ -121,6 +126,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
 
     /**
      * list中释放chunk对应的句柄对应的缓存块
+     *
      * @param chunk
      * @param handle
      * @param nioBuffer
@@ -166,6 +172,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
 
     /**
      * 添加到chunk
+     *
      * @param chunk
      */
     void add(PoolChunk<T> chunk) {
@@ -180,7 +187,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
     /**
      * Adds the {@link PoolChunk} to this {@link PoolChunkList}.
      * <p>
-     *     将{@link PoolChunk}添加到此{@link PoolChunkList}。
+     * 将{@link PoolChunk}添加到此{@link PoolChunkList}。
      * </p>
      */
     void add0(PoolChunk<T> chunk) {
@@ -197,6 +204,11 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
         }
     }
 
+    /**
+     * 删除list中cur
+     *
+     * @param cur chunk
+     */
     private void remove(PoolChunk<T> cur) {
         if (cur == head) {
             head = cur.next;

@@ -43,8 +43,9 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * 初始化
-     * @param chunk 由那个chunk分配
+     * buf初始化，buf对象new出来后，需要通过init和对应的内存进行绑定，即完成初始化
+     *
+     * @param chunk     由那个chunk分配
      * @param nioBuffer
      * @param handle
      * @param offset
@@ -63,6 +64,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
 
     /**
      * 初始化
+     *
      * @param chunk
      * @param nioBuffer
      * @param handle
@@ -76,10 +78,13 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         assert handle >= 0;
         assert chunk != null;
 
+        //来自哪个chunk
         this.chunk = chunk;
+        //位于内存
         memory = chunk.memory;
         //临时的buf
         tmpNioBuf = nioBuffer;
+        //分配器
         allocator = chunk.arena.parent;
         //缓存
         this.cache = cache;
@@ -87,14 +92,16 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         this.handle = handle;
         //偏移量
         this.offset = offset;
+        //长度
         this.length = length;
+        //最大长度
         this.maxLength = maxLength;
     }
 
     /**
      * Method must be called before reuse this {@link PooledByteBufAllocator}
      * <p>
-     *     必须在重用{@link PooledByteBufAllocator}之前调用方法
+     * 必须在重用{@link PooledByteBufAllocator}之前调用方法
      */
     final void reuse(int maxCapacity) {
         maxCapacity(maxCapacity);

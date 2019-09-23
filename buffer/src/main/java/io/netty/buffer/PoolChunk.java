@@ -289,7 +289,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
     /**
      * Creates a special chunk that is not pooled.
      * <p>
-     *     创建一个不池化的特殊块。
+     * 创建一个不池化的特殊块。
      * </p>
      */
     PoolChunk(PoolArena<T> arena, T memory, int size, int offset) {
@@ -333,6 +333,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
     /**
      * 使用率
      * 使用率/chunk大小
+     *
      * @param freeBytes
      * @return
      */
@@ -357,20 +358,26 @@ final class PoolChunk<T> implements PoolChunkMetric {
      * @return
      */
     boolean allocate(PooledByteBuf<T> buf, int reqCapacity, int normCapacity) {
-        //句柄
+        //代表了分配内存的句柄信息，使用一个long来表征
         final long handle;
+
         if ((normCapacity & subpageOverflowMask) != 0) { // >= pageSize
-            handle = allocateRun(normCapacity); //大于一页，使用run分配，直接在内存块的位置
+            //也就是普通容量规格的请求，即大于一页，使用run分配，直接在内存块的位置
+            handle = allocateRun(normCapacity);
         } else {
-            handle = allocateSubpage(normCapacity); //使用子页分配
+            //使用子页分配，也就是较小的规格的请求
+            handle = allocateSubpage(normCapacity);
         }
 
-        //id非法，
+        //句柄非法，分配失败
         if (handle < 0) {
             return false;
         }
+
+        //缓存一种形式，用于临时分配
         ByteBuffer nioBuffer = cachedNioBuffers != null ? cachedNioBuffers.pollLast() : null;
-        //初始化
+
+        //为buf进行初始化分配
         initBuf(buf, nioBuffer, handle, reqCapacity);
         return true;
     }
@@ -479,13 +486,16 @@ final class PoolChunk<T> implements PoolChunkMetric {
      * @return index in memoryMap
      */
     private long allocateRun(int normCapacity) {
+        //深度
         int d = maxOrder - (log2(normCapacity) - pageShifts);
         int id = allocateNode(d);
         if (id < 0) {
+            //分配失败
             return id;
         }
         //内存更新，空闲内存减少
         freeBytes -= runLength(id);
+        //返回句柄
         return id;
     }
 
@@ -509,6 +519,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
         PoolSubpage<T> head = arena.findSubpagePoolHead(normCapacity); //获得容量对应的子页
         int d = maxOrder; // subpages are only be allocated from pages i.e., leaves//子页面只能从页面分配，即叶子
         synchronized (head) {
+            //获得索引
             int id = allocateNode(d);
             if (id < 0) {
                 return id;
@@ -525,11 +536,11 @@ final class PoolChunk<T> implements PoolChunkMetric {
             //获得子页
             int subpageIdx = subpageIdx(id);
             PoolSubpage<T> subpage = subpages[subpageIdx];
-            if (subpage == null) { //如果没有就构建，并初始化
-                //空的构建，并添加到chunk中
+            if (subpage == null) {
+                //如果没有就构建，并初始化 空的构建，并进行init初始化
                 subpage = new PoolSubpage<T>(head, this, id, runOffset(id), pageSize, normCapacity);
                 subpages[subpageIdx] = subpage;
-            } else { //如果有了就重新初始化话
+            } else {
                 //初始化
                 subpage.init(head, normCapacity);
             }
@@ -596,12 +607,14 @@ final class PoolChunk<T> implements PoolChunkMetric {
         int memoryMapIdx = memoryMapIdx(handle);
         //索引
         int bitmapIdx = bitmapIdx(handle);
+
         if (bitmapIdx == 0) {
+            //不存在位图信息，是普通的规格分配初始化
             byte val = value(memoryMapIdx);
             assert val == unusable : String.valueOf(val);
-            buf.init(this, nioBuffer, handle, runOffset(memoryMapIdx) + offset,
-                    reqCapacity, runLength(memoryMapIdx), arena.parent.threadCache());
+            buf.init(this, nioBuffer, handle, runOffset(memoryMapIdx) + offset, reqCapacity, runLength(memoryMapIdx), arena.parent.threadCache());
         } else {
+            //存在位图信息，是较小规格分配存储初始化
             initBufWithSubpage(buf, nioBuffer, handle, bitmapIdx, reqCapacity);
         }
     }
@@ -629,6 +642,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
         assert subpage.doNotDestroy;
         assert reqCapacity <= subpage.elemSize;
 
+        //buf进行初始化
         buf.init(
                 this, nioBuffer, handle,
                 runOffset(memoryMapIdx) + (bitmapIdx & 0x3FFFFFFF) * subpage.elemSize + offset,

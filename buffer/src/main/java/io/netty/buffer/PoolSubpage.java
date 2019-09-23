@@ -81,7 +81,8 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         // 使用了一个bitmap来记录一个page的分配情况，这个bitmap数组默认size为8，因为我们最小的分配内存是16，
         // 所以一个page最多可以被分成512个小段，而一个long可以描述64位位图信息，
         // 所以只需要8个long就可以进行内存管理描述了。
-        bitmap = new long[pageSize >>> 10]; // pageSize / 16 / 64 = pagesSize/2^10
+        // pageSize / 16 / 64 = pagesSize/2^10
+        bitmap = new long[pageSize >>> 10];
         init(head, elemSize);
     }
 
@@ -106,7 +107,8 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
                 bitmapLength++;
             }
 
-            for (int i = 0; i < bitmapLength; i++) {//全部初始化，因此全部置0
+            //初始化位图数组
+            for (int i = 0; i < bitmapLength; i++) {
                 bitmap[i] = 0;
             }
         }
@@ -152,6 +154,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
 
     /**
      * 释放一块内存
+     *
      * @return {@code true} if this subpage is in use.
      * {@code false} if this subpage is not used by its chunk and thus it's OK to be released.
      */
@@ -189,6 +192,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
 
     /**
      * 添加到head上
+     *
      * @param head
      */
     private void addToPool(PoolSubpage<T> head) {
@@ -213,6 +217,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
 
     /**
      * 获得下一个可用的位置
+     *
      * @return
      */
     private int getNextAvail() {
@@ -227,6 +232,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
 
     /**
      * 查找下一个可用的位置
+     *
      * @return
      */
     private int findNextAvail() {
@@ -243,6 +249,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
 
     /**
      * 进行查找
+     *
      * @param i
      * @param bits
      * @return
@@ -267,6 +274,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
 
     /**
      * 转换为句柄
+     *
      * @param bitmapIdx
      * @return
      */
