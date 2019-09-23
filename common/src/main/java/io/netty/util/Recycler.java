@@ -76,19 +76,15 @@ public abstract class Recycler<T> {
         DEFAULT_MAX_CAPACITY_PER_THREAD = maxCapacityPerThread;
 
         //默认2
-        MAX_SHARED_CAPACITY_FACTOR = max(2,
-                SystemPropertyUtil.getInt("io.netty.recycler.maxSharedCapacityFactor",
-                        2));
+        MAX_SHARED_CAPACITY_FACTOR = max(2, SystemPropertyUtil.getInt("io.netty.recycler.maxSharedCapacityFactor", 2));
 
         //
-        MAX_DELAYED_QUEUES_PER_THREAD = max(0,
-                SystemPropertyUtil.getInt("io.netty.recycler.maxDelayedQueuesPerThread",
+        MAX_DELAYED_QUEUES_PER_THREAD = max(0, SystemPropertyUtil.getInt("io.netty.recycler.maxDelayedQueuesPerThread",
                         // We use the same value as default EventLoop number
                         NettyRuntime.availableProcessors() * 2));
 
         //默认16
-        LINK_CAPACITY = safeFindNextPositivePowerOfTwo(
-                max(SystemPropertyUtil.getInt("io.netty.recycler.linkCapacity", 16), 16));
+        LINK_CAPACITY = safeFindNextPositivePowerOfTwo(max(SystemPropertyUtil.getInt("io.netty.recycler.linkCapacity", 16), 16));
 
         // By default we allow one push to a Recycler for each 8th try on handles that were never recycled before.
         // This should help to slowly increase the capacity of the recycler while not be too sensitive to allocation
@@ -178,7 +174,8 @@ public abstract class Recycler<T> {
         Stack<T> stack = threadLocal.get();
         //弹出一个
         DefaultHandle<T> handle = stack.pop();
-        if (handle == null) {//不存在，构建一个新handle并构建新的对象
+        if (handle == null) {
+            //不存在，构建一个新handle并构建新的对象
             handle = stack.newHandle();
             handle.value = newObject(handle);
         }
@@ -365,6 +362,12 @@ public abstract class Recycler<T> {
             owner = new WeakReference<Thread>(thread);
         }
 
+        /**
+         * 构建应新的queue
+         * @param stack
+         * @param thread
+         * @return
+         */
         static WeakOrderQueue newQueue(Stack<?> stack, Thread thread) {
             final WeakOrderQueue queue = new WeakOrderQueue(stack, thread);
             // Done outside of the constructor to ensure WeakOrderQueue.this does not escape the constructor and so
@@ -387,6 +390,7 @@ public abstract class Recycler<T> {
          */
         static WeakOrderQueue allocate(Stack<?> stack, Thread thread) {
             // We allocated a Link so reserve the space
+            // 我们分配了一个链接，因此请保留空间
             return Head.reserveSpace(stack.availableSharedCapacity, LINK_CAPACITY)
                     ? newQueue(stack, thread) : null;
         }
@@ -514,6 +518,7 @@ public abstract class Recycler<T> {
         //
         // 最大的问题是如果我们不使用WeakReference，如果用户在某处存储对DefaultHandle的引用并且从不清除此引用（或者不及时清除它），则可能根本无法收集线程。。
         final WeakReference<Thread> threadRef;
+        //支持的共享容量
         final AtomicInteger availableSharedCapacity;
         final int maxDelayedQueues;
 
@@ -648,7 +653,12 @@ public abstract class Recycler<T> {
             return success;
         }
 
+        /**
+         * 将回收的对象push回
+         * @param item
+         */
         void push(DefaultHandle<?> item) {
+            //当前的线程
             Thread currentThread = Thread.currentThread();
             if (threadRef.get() == currentThread) {
                 // The current Thread is the thread that belongs to the Stack, we can try to push the object now.
@@ -690,12 +700,16 @@ public abstract class Recycler<T> {
             // 我们不希望将队列的引用作为弱映射中的值
             // 所以我们把它搞清楚了; 确保以后没有比赛恢复
             // 我们在这里强加一个内存排序（x86上没有操作）
+
+            //获得由线程维护的映射
             Map<Stack<?>, WeakOrderQueue> delayedRecycled = DELAYED_RECYCLED.get();
             WeakOrderQueue queue = delayedRecycled.get(this);
             if (queue == null) {
+
                 if (delayedRecycled.size() >= maxDelayedQueues) {
                     // Add a dummy queue so we know we should drop the object
                     // 添加一个虚拟队列，以便我们知道应该删除该对象
+                    // 满了
                     delayedRecycled.put(this, WeakOrderQueue.DUMMY);
                     return;
                 }

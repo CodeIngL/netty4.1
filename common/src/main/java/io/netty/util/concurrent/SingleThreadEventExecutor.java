@@ -282,13 +282,17 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         }
     }
 
+    /**
+     * 从受调度的任务中提取任务到任务 队列中
+     * @return
+     */
     private boolean fetchFromScheduledTaskQueue() {
         long nanoTime = AbstractScheduledEventExecutor.nanoTime();
         Runnable scheduledTask  = pollScheduledTask(nanoTime);
         while (scheduledTask != null) {
             if (!taskQueue.offer(scheduledTask)) {
                 // No space left in the task queue add it back to the scheduledTaskQueue so we pick it up again.
-                // 任务队列中没有剩余空间将其添加回scheduledTaskQueue，因此我们再次提取它。
+                // 任务队列中没有剩余空间将其添加回scheduledTaskQueue，因此我们可以再次提取它。
                 scheduledTaskQueue().add((ScheduledFutureTask<?>) scheduledTask);
                 return false;
             }
@@ -381,6 +385,9 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     /**
      * Runs all tasks from the passed {@code taskQueue}.
+     * <p>
+     *     运行传递的{@code taskQueue}中的所有任务。
+     * </p>
      *
      * @param taskQueue To poll and execute all tasks.
      *
@@ -422,6 +429,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
             // Check timeout every 64 tasks because nanoTime() is relatively expensive.
             // XXX: Hard-coded value - will make it configurable if it is really a problem.
+            // 检查每64个任务的超时，因为nanoTime（）相对昂贵。
+            // XXX：硬编码值 - 如果确实存在问题，将使其可配置。
             if ((runTasks & 0x3F) == 0) {
                 lastExecutionTime = ScheduledFutureTask.nanoTime();
                 if (lastExecutionTime >= deadline) {
