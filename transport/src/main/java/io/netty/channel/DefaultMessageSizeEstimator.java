@@ -23,6 +23,9 @@ import io.netty.buffer.ByteBufHolder;
 /**
  * Default {@link MessageSizeEstimator} implementation which supports the estimation of the size of
  * {@link ByteBuf}, {@link ByteBufHolder} and {@link FileRegion}.
+ * <p>
+ *     默认的{@link MessageSizeEstimator} 实现，支持对{@link ByteBuf}, {@link ByteBufHolder} 和{@link FileRegion}的大小进行估计。
+ * </p>
  */
 public final class DefaultMessageSizeEstimator implements MessageSizeEstimator {
 

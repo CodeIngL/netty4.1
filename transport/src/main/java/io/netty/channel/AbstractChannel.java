@@ -122,6 +122,11 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         return new DefaultChannelPipeline(this);
     }
 
+    /**
+     * channel是否支持可写，我们检查接收出站消息的内部结构来进行相应的检查
+     * 一般的场景并没有使用到，即当我们考虑特殊的场景时我可以利用这个API进行一些操作
+     * @return
+     */
     @Override
     public boolean isWritable() {
         ChannelOutboundBuffer buf = unsafe.outboundBuffer();
@@ -897,7 +902,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         }
 
         /**
-         * 写操作
+         * 写操作,channel写出消息
          * @param msg
          * @param promise
          */
@@ -905,7 +910,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         public final void write(Object msg, ChannelPromise promise) {
             assertEventLoop();
 
-            //写出缓冲
+            //缓冲结构，用于缓存写出的出站数据
             ChannelOutboundBuffer outboundBuffer = this.outboundBuffer;
             if (outboundBuffer == null) {
                 // If the outboundBuffer is null we know the channel was closed and so

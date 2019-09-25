@@ -27,6 +27,10 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
  * A queue of write operations which are pending for later execution. It also updates the
  * {@linkplain Channel#isWritable() writability} of the associated {@link Channel}, so that
  * the pending write operations are also considered to determine the writability.
+ * <p>
+ *     队列中的写操作，等待稍后执行。
+ *     它还会更新关联{@link Channel}的{@linkplain Channel#isWritable() writability}，以便也考虑挂起的写操作来确定可写性。
+ * </p>
  */
 public final class PendingWriteQueue {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(PendingWriteQueue.class);

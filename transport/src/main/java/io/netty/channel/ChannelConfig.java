@@ -229,6 +229,10 @@ public interface ChannelConfig {
      * Sets the high water mark of the write buffer.  If the number of bytes
      * queued in the write buffer exceeds this value, {@link Channel#isWritable()}
      * will start to return {@code false}.
+     *
+     * <p>
+     *     设置写缓冲区的高水位线。 如果写入缓冲区中排队的字节数超过此值，则{@link Channel#isWritable()}将开始返回{@code false}。
+     * </p>
      */
     ChannelConfig setWriteBufferHighWaterMark(int writeBufferHighWaterMark);
 
@@ -238,6 +242,9 @@ public interface ChannelConfig {
      * {@linkplain #setWriteBufferHighWaterMark(int) high water mark} and then
      * dropped down below this value, {@link Channel#isWritable()} will start to return
      * {@code true} again.
+     * <p>
+     *     返回写缓冲区的低水位线。 一旦写入缓冲区中排队的字节数超过高水位线，然后降至该值以下，{@link Channel#isWritable()} 将再次开始返回true
+     * </p>
      */
     int getWriteBufferLowWaterMark();
 

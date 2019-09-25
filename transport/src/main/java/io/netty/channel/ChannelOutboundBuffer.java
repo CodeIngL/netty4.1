@@ -50,10 +50,9 @@ import static java.lang.Math.min;
  * </p>
  *
  * <p>
- * （仅限传输实现程序）AbstractChannel用于存储其挂起的出站写入请求的内部数据结构。
+ * （仅限传输实现程序）{@link AbstractChannel} 用于存储其挂起的outbound写入请求的内部数据结构。
  * <p>
  * 所有方法都必须由I/O线程的传输实现调用，但以下方法除外：
- *
  * <ul>
  * <li>{@link #size()} and {@link #isEmpty()}</li>
  * <li>{@link #isWritable()}</li>
@@ -135,16 +134,21 @@ public final class ChannelOutboundBuffer {
      * </p>
      */
     public void addMessage(Object msg, int size, ChannelPromise promise) {
+        //构建缓冲条目
         Entry entry = Entry.newInstance(msg, size, total(msg), promise);
         //添加到尾巴上
         if (tailEntry == null) {
             flushedEntry = null;
         } else {
+            //获得尾巴条目
             Entry tail = tailEntry;
+            //连接到尾巴上
             tail.next = entry;
         }
+        //跟新尾巴
         tailEntry = entry;
         if (unflushedEntry == null) {
+            //更新为刷出的指针
             unflushedEntry = entry;
         }
 
@@ -152,6 +156,7 @@ public final class ChannelOutboundBuffer {
         // See https://github.com/netty/netty/issues/1619
         // 将消息添加到未刷新的数组后增加挂起的字节。
         // 请参阅https://github.com/netty/netty/issues/1619
+        // 增加挂起待写出的字节数
         incrementPendingOutboundBytes(entry.pendingSize, false);
     }
 
@@ -199,7 +204,7 @@ public final class ChannelOutboundBuffer {
     }
 
     /**
-     * 增加挂起的字节
+     * 增加挂起的字节，当挂起的字节数大于最高水位时，我们设定无法缓冲不支持写入
      * @param size
      * @param invokeLater
      */
