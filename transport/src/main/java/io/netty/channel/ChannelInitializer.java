@@ -75,6 +75,7 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelInbou
     public final void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         // Normally this method will never be called as handlerAdded(...) should call initChannel(...) and remove
         // the handler.
+        // 通常，永远不会调用此方法，因为handlerAdded(...)应该调用initChannel(...) 并删除处理程序。
         if (initChannel(ctx)) {
             // we called initChannel(...) so we need to call now pipeline.fireChannelRegistered() to ensure we not
             // miss an event.
@@ -109,9 +110,14 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelInbou
             // The good thing about calling initChannel(...) in handlerAdded(...) is that there will be no ordering
             // surprises if a ChannelInitializer will add another ChannelInitializer. This is as all handlers
             // will be added in the expected order.
+            // 对于我们当前的DefaultChannelPipeline实现，应该始终如此。
+            //            
+            // 在handlerAdded（...）中调用initChannel（...）的好处是，如果ChannelInitializer将添加另一个ChannelInitializer，则不会出现排序意外。
+            // 这是因为所有处理程序都将按预期顺序添加。
             if (initChannel(ctx)) {
 
                 // We are done with init the Channel, removing the initializer now.
+                // 删除这个
                 removeState(ctx);
             }
         }

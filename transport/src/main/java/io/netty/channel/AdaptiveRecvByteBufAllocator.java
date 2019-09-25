@@ -172,8 +172,12 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
             }
         }
 
+        /**
+         * 分配处理器完成
+         */
         @Override
         public void readComplete() {
+            //记录数据
             record(totalBytesRead());
         }
     }

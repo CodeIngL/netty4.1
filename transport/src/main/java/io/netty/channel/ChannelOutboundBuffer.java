@@ -228,13 +228,21 @@ public final class ChannelOutboundBuffer {
         decrementPendingOutboundBytes(size, true, true);
     }
 
+    /**
+     * 减少挂起的等待写出的内容
+     * @param size
+     * @param invokeLater
+     * @param notifyWritability
+     */
     private void decrementPendingOutboundBytes(long size, boolean invokeLater, boolean notifyWritability) {
         if (size == 0) {
             return;
         }
 
+        //totalPendingSize新的总共挂起的大小
         long newWriteBufferSize = TOTAL_PENDING_SIZE_UPDATER.addAndGet(this, -size);
         if (notifyWritability && newWriteBufferSize < channel.config().getWriteBufferLowWaterMark()) {
+            //需要设置，并且在低水位上，让我们设置
             setWritable(invokeLater);
         }
     }
@@ -808,6 +816,10 @@ public final class ChannelOutboundBuffer {
     /**
      * Get how many bytes can be written until {@link #isWritable()} returns {@code false}.
      * This quantity will always be non-negative. If {@link #isWritable()} is {@code false} then 0.
+     *
+     * <p>
+     *     获取直到{@link #isWritable()} 返回false为止可以写入的字节数。 此数量将始终为非负数。 如果{@link #isWritable()}为false，则为0。
+     * </p>
      */
     public long bytesBeforeUnwritable() {
         long bytes = channel.config().getWriteBufferHighWaterMark() - totalPendingSize;

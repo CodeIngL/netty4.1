@@ -115,6 +115,7 @@ public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessa
 
         @Override
         public ByteBuf allocate(ByteBufAllocator alloc) {
+            //分配分配，根据规格进行猜测
             return alloc.ioBuffer(guess());
         }
 
@@ -169,6 +170,10 @@ public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessa
             attemptedBytesRead = bytes;
         }
 
+        /**
+         * 获得的阅读的数据
+         * @return
+         */
         protected final int totalBytesRead() {
             return totalBytesRead < 0 ? Integer.MAX_VALUE : totalBytesRead;
         }

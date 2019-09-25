@@ -121,6 +121,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         tail.prev = head;
     }
 
+    /**
+     * 获得估算处理器
+     * @return
+     */
     final MessageSizeEstimator.Handle estimatorHandle() {
         MessageSizeEstimator.Handle handle = estimatorHandle;
         if (handle == null) {
