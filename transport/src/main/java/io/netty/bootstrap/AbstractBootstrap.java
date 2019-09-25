@@ -270,6 +270,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     /**
+     * 构建一个Channel并绑定它
      * Create a new {@link Channel} and bind it.
      */
     public ChannelFuture bind(int inetPort) {

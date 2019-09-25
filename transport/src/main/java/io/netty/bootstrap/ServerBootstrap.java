@@ -181,6 +181,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
 
     /**
      * 本级进行初始化channel，这个初始化动作是为了完成channel的某些关系或者属性的设置，而不是新建（构造实例)
+     * 完成channel的初始化
      *
      * @param channel
      * @throws Exception
@@ -324,7 +325,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         @Override
         @SuppressWarnings("unchecked")
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
-            //获得普通的Channel，监听处理连接消息并产生一个代表连接的Channel
+            //获得普通的Channel，监听处理连接消息并产生一个代表连接的Channel，对于nio来说是NioSocketChannel
             final Channel child = (Channel) msg;
 
             //为消息channel添加添处理器

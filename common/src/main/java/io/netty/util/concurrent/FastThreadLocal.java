@@ -288,6 +288,7 @@ public class FastThreadLocal<V> {
 
         if (v != InternalThreadLocalMap.UNSET) {
             try {
+                //调用onRemoval机制
                 onRemoval((V) v);
             } catch (Exception e) {
                 PlatformDependent.throwException(e);
