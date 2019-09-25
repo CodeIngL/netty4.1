@@ -117,6 +117,9 @@ public abstract class Recycler<T> {
     //
     private final int maxDelayedQueuesPerThread;
 
+    /**
+     * 基于线程级别的stack，，用于主体的回收和分配对象
+     */
     private final FastThreadLocal<Stack<T>> threadLocal = new FastThreadLocal<Stack<T>>() {
         @Override
         protected Stack<T> initialValue() {
@@ -167,7 +170,8 @@ public abstract class Recycler<T> {
      */
     @SuppressWarnings("unchecked")
     public final T get() {
-        if (maxCapacityPerThread == 0) { // 修改maxCapacityPerThread=0可以关闭回收功能, 默认值是4K
+        if (maxCapacityPerThread == 0) {
+            // 修改maxCapacityPerThread=0可以关闭回收功能, 默认值是4K
             return newObject((Handle<T>) NOOP_HANDLE);
         }
         //当前线程的stack
@@ -177,6 +181,7 @@ public abstract class Recycler<T> {
         if (handle == null) {
             //不存在，构建一个新handle并构建新的对象
             handle = stack.newHandle();
+            //构建新的值
             handle.value = newObject(handle);
         }
         return (T) handle.value; //返回对象
@@ -219,14 +224,21 @@ public abstract class Recycler<T> {
         void recycle(T object);
     }
 
+    /**
+     * 通常是栈中的元素
+     * @param <T>
+     */
     static final class DefaultHandle<T> implements Handle<T> {
+        //最后被回收的id
         private int lastRecycledId;
         //回收的线程id
         private int recycleId;
-
+        //已经被回收的id
         boolean hasBeenRecycled;
 
+        //归属的栈
         private Stack<?> stack;
+        //值
         private Object value;
 
         DefaultHandle(Stack<?> stack) {

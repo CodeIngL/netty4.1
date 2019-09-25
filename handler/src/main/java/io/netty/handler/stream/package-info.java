@@ -18,5 +18,10 @@
  * Writes very large data stream asynchronously neither spending a lot of
  * memory nor getting {@link java.lang.OutOfMemoryError}.  For a detailed
  * example, please refer to {@code io.netty.example.http.file}.
+ *
+ * <p>
+ *     异步写入非常大的数据流，既不会花费大量内存，也不会出现{@link java.lang.OutOfMemoryError}。
+ *     有关详细示例，请参阅{@code io.netty.example.http.file}
+ * </p>
  */
 package io.netty.handler.stream;
