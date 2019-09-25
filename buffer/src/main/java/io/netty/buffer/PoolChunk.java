@@ -229,6 +229,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
     //chunk的空闲内存数量
     private int freeBytes;
 
+    //当前属于哪一个list
     PoolChunkList<T> parent;
     //前向指针
     PoolChunk<T> prev;
@@ -361,7 +362,8 @@ final class PoolChunk<T> implements PoolChunkMetric {
         //代表了分配内存的句柄信息，使用一个long来表征
         final long handle;
 
-        if ((normCapacity & subpageOverflowMask) != 0) { // >= pageSize
+        if ((normCapacity & subpageOverflowMask) != 0) {
+            // >= pageSize，subpageOverflowMask，subPage的掩码
             //也就是普通容量规格的请求，即大于一页，使用run分配，直接在内存块的位置
             handle = allocateRun(normCapacity);
         } else {
@@ -535,6 +537,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
 
             //获得子页
             int subpageIdx = subpageIdx(id);
+            //获得子页位置
             PoolSubpage<T> subpage = subpages[subpageIdx];
             if (subpage == null) {
                 //如果没有就构建，并初始化 空的构建，并进行init初始化
@@ -588,6 +591,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
         //向上更新
         updateParentsFree(memoryMapIdx);
 
+        //对象进行缓存
         if (nioBuffer != null && cachedNioBuffers != null &&
                 cachedNioBuffers.size() < PooledByteBufAllocator.DEFAULT_MAX_CACHED_BYTEBUFFERS_PER_CHUNK) {
             cachedNioBuffers.offer(nioBuffer);

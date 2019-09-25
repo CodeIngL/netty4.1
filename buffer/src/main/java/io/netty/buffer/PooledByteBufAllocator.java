@@ -203,11 +203,11 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     private final PoolArena<byte[]>[] heapArenas;
     //堆外arena
     private final PoolArena<ByteBuffer>[] directArenas;
-    //thread级别缓存tiny数量
+    //thread级别缓存tiny数量，默认512
     private final int tinyCacheSize;
-    //thread级别缓存small数量
+    //thread级别缓存small数量，默认256
     private final int smallCacheSize;
-    //thread级别缓存normal数量
+    //thread级别缓存normal数量，默认64
     private final int normalCacheSize;
     //堆内统计信息
     private final List<PoolArenaMetric> heapArenaMetrics;
@@ -286,11 +286,11 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         //构建线程级别的缓存
         threadCache = new PoolThreadLocalCache(useCacheForAllThreads);
         //tiny大小
-        this.tinyCacheSize = tinyCacheSize; //默认512
+        this.tinyCacheSize = tinyCacheSize; //默认512个
         //small大小
-        this.smallCacheSize = smallCacheSize; //默认256
+        this.smallCacheSize = smallCacheSize; //默认256个
         //normal大小
-        this.normalCacheSize = normalCacheSize; //默认64
+        this.normalCacheSize = normalCacheSize; //默认64个
         //chunk大小, pageSize<<maxOrder,默认8192*2^11（16M），4K页，深度11
         chunkSize = validateAndCalculateChunkSize(pageSize, maxOrder); //默认8192*2^11（16M）
 
@@ -771,6 +771,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     public boolean trimCurrentThreadCache() {
         PoolThreadCache cache = threadCache.getIfExists();
         if (cache != null) {
+            //修剪缓存
             cache.trim();
             return true;
         }

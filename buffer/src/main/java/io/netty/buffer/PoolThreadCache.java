@@ -488,6 +488,11 @@ final class PoolThreadCache {
         //已经产生的分配次数
         private int allocations;
 
+        /**
+         * 线程内存级缓存
+         * @param size 数量
+         * @param sizeClass 规格类型
+         */
         MemoryRegionCache(int size, SizeClass sizeClass) {
             //大小
             this.size = MathUtil.safeFindNextPositivePowerOfTwo(size);
@@ -598,8 +603,11 @@ final class PoolThreadCache {
          */
         @SuppressWarnings({ "unchecked", "rawtypes" })
         private  void freeEntry(Entry entry, boolean finalizer) {
+            //获得chunk
             PoolChunk chunk = entry.chunk;
+            //获得句柄
             long handle = entry.handle;
+            //获得对应的buffer
             ByteBuffer nioBuffer = entry.nioBuffer;
 
             if (!finalizer) {

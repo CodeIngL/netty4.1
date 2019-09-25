@@ -135,6 +135,7 @@ final class PoolChunkList<T> implements PoolChunkListMetric {
     boolean free(PoolChunk<T> chunk, long handle, ByteBuffer nioBuffer) {
         chunk.free(handle, nioBuffer);
         if (chunk.usage() < minUsage) {
+            //使用量小于最小的使用量，让我们移动他
             remove(chunk);
             // Move the PoolChunk down the PoolChunkList linked-list.
             return move0(chunk);
