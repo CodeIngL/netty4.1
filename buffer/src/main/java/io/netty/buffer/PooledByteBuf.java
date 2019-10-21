@@ -33,6 +33,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
     protected int length;
     int maxLength;
     PoolThreadCache cache;
+    //临时的buffer
     ByteBuffer tmpNioBuf;
     private ByteBufAllocator allocator;
 
@@ -115,6 +116,11 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         return length;
     }
 
+    /**
+     * 调整byteBuf的容量，这就很有可能会造成重新分配
+     * @param newCapacity 新的容量
+     * @return 缓冲区
+     */
     @Override
     public final ByteBuf capacity(int newCapacity) {
         checkNewCapacity(newCapacity);
@@ -136,11 +142,13 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
                     if (maxLength <= 512) { //小于512
                         if (newCapacity > maxLength - 16) {
                             length = newCapacity;
+                            //更新读写坐标直接返回
                             setIndex(Math.min(readerIndex(), newCapacity), Math.min(writerIndex(), newCapacity));
                             return this;
                         }
                     } else { // > 512 (i.e. >= 1024)
                         length = newCapacity;
+                        //更新读写坐标直接返回
                         setIndex(Math.min(readerIndex(), newCapacity), Math.min(writerIndex(), newCapacity));
                         return this;
                     }
@@ -203,6 +211,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
             final long handle = this.handle;
             this.handle = -1;
             memory = null; //内存置空，
+            //尝试进行释放，可能会进入相关的缓存中
             chunk.arena.free(chunk, tmpNioBuf, handle, maxLength, cache);
             tmpNioBuf = null;
             chunk = null;

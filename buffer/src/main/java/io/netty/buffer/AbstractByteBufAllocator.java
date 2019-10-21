@@ -280,12 +280,15 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         return toLeakAwareBuffer(new CompositeByteBuf(this, true, maxNumComponents));
     }
 
+    /**
+     * 校验参数
+     * @param initialCapacity
+     * @param maxCapacity
+     */
     private static void validate(int initialCapacity, int maxCapacity) {
         checkPositiveOrZero(initialCapacity, "initialCapacity");
         if (initialCapacity > maxCapacity) {
-            throw new IllegalArgumentException(String.format(
-                    "initialCapacity: %d (expected: not greater than maxCapacity(%d)",
-                    initialCapacity, maxCapacity));
+            throw new IllegalArgumentException(String.format("initialCapacity: %d (expected: not greater than maxCapacity(%d)", initialCapacity, maxCapacity));
         }
     }
 

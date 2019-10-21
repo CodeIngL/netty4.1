@@ -100,6 +100,7 @@ class SimpleLeakAwareByteBuf extends WrappedByteBuf {
     @Override
     public boolean release() {
         if (super.release()) {
+            //释放成功，关闭追踪
             closeLeak();
             return true;
         }

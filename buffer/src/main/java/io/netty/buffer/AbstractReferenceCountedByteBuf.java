@@ -45,7 +45,7 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
     };
 
     // Value might not equal "real" reference count, all access should be via the updater
-    // 值可能不等于“真实”引用计数，所有访问都应该通过更新程序
+    // 值可能不等于“真实”引用计数，所有访问都应该通过updater来操作这个引用计数
     @SuppressWarnings("unused")
     private volatile int refCnt = updater.initialValue();
 
@@ -57,6 +57,7 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
     boolean isAccessible() {
         // Try to do non-volatile read for performance as the ensureAccessible() is racy anyway and only provide
         // a best-effort guard.
+        // 尝试执行non-volatile读取以提高性能，因为ensureAccessible()仍然很流行，并且仅提供尽力而为的保护措施。
         return updater.isLiveNonVolatile(this);
     }
 
@@ -112,6 +113,11 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
         return handleRelease(updater.release(this, decrement));
     }
 
+    /**
+     * 最终释放，解除分配
+     * @param result 分配是否释放
+     * @return
+     */
     private boolean handleRelease(boolean result) {
         if (result) {
             deallocate();
@@ -121,6 +127,7 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
 
     /**
      * Called once {@link #refCnt()} is equals 0.
+     * 仅调用一次，当refCnt()的值是0的时候
      */
     protected abstract void deallocate();
 }

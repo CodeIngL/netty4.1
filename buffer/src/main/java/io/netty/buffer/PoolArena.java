@@ -193,7 +193,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
      * @return
      */
     PooledByteBuf<T> allocate(PoolThreadCache cache, int reqCapacity, int maxCapacity) {
-        PooledByteBuf<T> buf = newByteBuf(maxCapacity); //创建一个新的buf，里面除了maxCapacity，没有other,
+        PooledByteBuf<T> buf = newByteBuf(maxCapacity); //创建一个新的buf，里面除了maxCapacity，没有other,也就是没有绑定相关的内存，即未初始化
         allocate(cache, buf, reqCapacity);//使用线程cacahe来为这个新的buf分配空间
         return buf;
     }
@@ -250,9 +250,9 @@ abstract class PoolArena<T> implements PoolArenaMetric {
      * 4, 更大的使用allocateHuge分配
      * </p>
      *
-     * @param cache
-     * @param buf
-     * @param reqCapacity
+     * @param cache 线程缓存
+     * @param buf 待初始化的buffer
+     * @param reqCapacity 请求的容量
      */
     private void allocate(PoolThreadCache cache, PooledByteBuf<T> buf, final int reqCapacity) {
         final int normCapacity = normalizeCapacity(reqCapacity); //规范化请求的容量
@@ -261,7 +261,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
             PoolSubpage<T>[] table;
             boolean tiny = isTiny(normCapacity);
             if (tiny) { // < 512
-                //使用线程级别的缓存分配
+                //使用线程级别的缓存分配，尝试使用
                 if (cache.allocateTiny(this, buf, reqCapacity, normCapacity)) {
                     return;
                 }
@@ -288,6 +288,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
              *     在头上同步。 这需要{@link PoolChunk#allocateSubpage(int)}和{@link PoolChunk#free(long)}也可以修改双向链表。
              */
             synchronized (head) {
+                //尝试在arena本身上的优化手段进行相关的分配
                 final PoolSubpage<T> s = head.next; //下一个
                 if (s != head) {
                     //说明索引表中该规格下，挂着相关的对象
@@ -444,10 +445,13 @@ abstract class PoolArena<T> implements PoolArenaMetric {
                         throw new Error();
                 }
             }
+            //是否需要销毁chunk
             destroyChunk = !chunk.parent.free(chunk, handle, nioBuffer);
         }
+        //在整个列表中都是小于最小使用量，我们进行chunk的销毁
         if (destroyChunk) {
             // destroyChunk not need to be called while holding the synchronized lock.
+            // 保持同步锁时不需要调用destroyChunk。
             destroyChunk(chunk);
         }
     }
@@ -572,6 +576,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
 
         buf.setIndex(readerIndex, writerIndex);
 
+        //如果支持释放旧有的内存，我们尝试进行内存的释放
         if (freeOldMemory) {
             free(oldChunk, oldNioBuffer, oldHandle, oldMaxLength, buf.cache);
         }

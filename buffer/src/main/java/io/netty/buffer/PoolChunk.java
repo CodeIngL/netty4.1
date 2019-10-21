@@ -623,6 +623,13 @@ final class PoolChunk<T> implements PoolChunkMetric {
         }
     }
 
+    /**
+     * 使用子页完成缓存区的初始化
+     * @param buf
+     * @param nioBuffer
+     * @param handle
+     * @param reqCapacity
+     */
     void initBufWithSubpage(PooledByteBuf<T> buf, ByteBuffer nioBuffer, long handle, int reqCapacity) {
         initBufWithSubpage(buf, nioBuffer, handle, bitmapIdx(handle), reqCapacity);
     }
@@ -640,6 +647,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
                                     long handle, int bitmapIdx, int reqCapacity) {
         assert bitmapIdx != 0;
 
+        //内存映射的索引
         int memoryMapIdx = memoryMapIdx(handle);
 
         PoolSubpage<T> subpage = subpages[subpageIdx(memoryMapIdx)];

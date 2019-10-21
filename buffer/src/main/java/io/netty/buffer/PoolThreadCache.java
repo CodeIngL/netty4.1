@@ -185,7 +185,7 @@ final class PoolThreadCache {
             int cacheSize, int maxCachedBufferCapacity, PoolArena<T> area) {
 
         if (cacheSize > 0 && maxCachedBufferCapacity > 0) {
-            int max = Math.min(area.chunkSize, maxCachedBufferCapacity); //前者默认16M，后者默认32KB，pasgSize默认8K
+            int max = Math.min(area.chunkSize, maxCachedBufferCapacity); //前者默认16M，后者默认32KB，pasgSize默认8K，最大normal能缓存的规格只能是设定的并且不超过一个chunk大小
             int arraySize = Math.max(1, log2(max / area.pageSize) + 1); //对应产出的数组大小，不同规格的类型，一个普通pagesSize是8k,因此让我们是用最大缓存值来进行划分
 
             @SuppressWarnings("unchecked")
@@ -238,15 +238,24 @@ final class PoolThreadCache {
         return allocate(cacheForNormal(area, normCapacity), buf, reqCapacity);
     }
 
+    /**
+     * 使用线程级别的维护的缓存进行分配相关的内存
+     * @param cache 缓存
+     * @param buf 待初始化的buffer
+     * @param reqCapacity 请求分配容量
+     * @return
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private boolean allocate(MemoryRegionCache<?> cache, PooledByteBuf buf, int reqCapacity) {
         if (cache == null) {
-            // no cache found so just return false here
-            // 没有找到缓存所以只在这里返回false
+            // 没有找到缓存所以只在这里返回false,分配失败
             return false;
         }
+        //尝试进行分配
         boolean allocated = cache.allocate(buf, reqCapacity);
+
         if (++ allocations >= freeSweepAllocationThreshold) {
+            //分配到达阈值，我们尝试进行修剪并重置
             allocations = 0;
             trim();
         }
@@ -389,6 +398,7 @@ final class PoolThreadCache {
      * @return
      */
     private MemoryRegionCache<?> cacheForTiny(PoolArena<?> area, int normCapacity) {
+        //获得规格的索引
         int idx = PoolArena.tinyIdx(normCapacity);
         if (area.isDirect()) {
             return cache(tinySubPageDirectCaches, idx);
@@ -475,6 +485,7 @@ final class PoolThreadCache {
 
     //--------------关于线程的Cache
     /**
+     * 线程级别的缓存
      * 内存区域的缓存，线程级别的缓存
      * @param <T>
      */
@@ -515,6 +526,7 @@ final class PoolThreadCache {
          * Add to cache if not already full.
          * <p>
          *     如果尚未填充，请添加到缓存。
+         * @param handle 内存块的句柄
          */
         @SuppressWarnings("unchecked")
         public final boolean add(PoolChunk<T> chunk, ByteBuffer nioBuffer, long handle) {
@@ -536,10 +548,12 @@ final class PoolThreadCache {
          *     如果可能，从缓存中分配一些内容，并从缓存中删除该entry。
          */
         public final boolean allocate(PooledByteBuf<T> buf, int reqCapacity) {
+            //尝试从队列中拉却相关的缓存条目，使用条目完成对缓冲区的初始化
             Entry<T> entry = queue.poll();
             if (entry == null) {
                 return false;
             }
+            //初始化缓冲区
             initBuf(entry.chunk, entry.nioBuffer, entry.handle, buf, reqCapacity);
             entry.recycle();
 

@@ -87,6 +87,9 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         }
     };
 
+    /**
+     * 静态代码块初始化池化分配器
+     */
     static {
         //默认页大小，8KB
         int defaultPageSize = getInt("io.netty.allocator.pageSize", 8192);
@@ -99,7 +102,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         }
         DEFAULT_PAGE_SIZE = defaultPageSize;
 
-        //默认的深度是11
+        //默认的深度是11，跟内存chunk相关
         int defaultMaxOrder = getInt("io.netty.allocator.maxOrder", 11);
         Throwable maxOrderFallbackCause = null;
         try {
@@ -130,18 +133,17 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
          */
         final int defaultMinNumArena = NettyRuntime.availableProcessors() * 2; //处理器*2
         final int defaultChunkSize = DEFAULT_PAGE_SIZE << DEFAULT_MAX_ORDER;//默认16M
+        //假设每一个arena有3个区块，pool不超过最大内存的50%
         DEFAULT_NUM_HEAP_ARENA = Math.max(0,
                 getInt("io.netty.allocator.numHeapArenas",
-                        (int) Math.min(
-                                defaultMinNumArena,
-                                runtime.maxMemory() / defaultChunkSize / 2 / 3)));
+                        (int) Math.min(defaultMinNumArena, runtime.maxMemory() / defaultChunkSize / 2 / 3)));
+        //假设每一个arena有3个区块，pool不超过最大内存的50%
         DEFAULT_NUM_DIRECT_ARENA = Math.max(0,
                 getInt("io.netty.allocator.numDirectArenas",
-                        (int) Math.min(
-                                defaultMinNumArena,
-                                PlatformDependent.maxDirectMemory() / defaultChunkSize / 2 / 3)));
+                        (int) Math.min(defaultMinNumArena, PlatformDependent.maxDirectMemory() / defaultChunkSize / 2 / 3)));
 
         // cache sizes
+        // 缓存的个数数量
         DEFAULT_TINY_CACHE_SIZE = getInt("io.netty.allocator.tinyCacheSize", 512);
         DEFAULT_SMALL_CACHE_SIZE = getInt("io.netty.allocator.smallCacheSize", 256);
         DEFAULT_NORMAL_CACHE_SIZE = getInt("io.netty.allocator.normalCacheSize", 64);
@@ -149,27 +151,24 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         // 32 kb is the default maximum capacity of the cached buffer. Similar to what is explained in
         // 'Scalable memory allocation using jemalloc'
         // 32 kb是缓存缓冲区的默认最大容量。 类似于'使用jemalloc进行可扩展内存分配'中的解释
+        //最大规格，对于normal级别的缓存来说
         DEFAULT_MAX_CACHED_BUFFER_CAPACITY = getInt("io.netty.allocator.maxCachedBufferCapacity", 32 * 1024);
 
         // the number of threshold of allocations when cached entries will be freed up if not frequently used
         // 如果不经常使用缓存entry将被释放的分配阈值数
         DEFAULT_CACHE_TRIM_INTERVAL = getInt("io.netty.allocator.cacheTrimInterval", 8192);
 
-        DEFAULT_CACHE_TRIM_INTERVAL_MILLIS = SystemPropertyUtil.getLong(
-                "io.netty.allocation.cacheTrimIntervalMillis", 0);
+        DEFAULT_CACHE_TRIM_INTERVAL_MILLIS = SystemPropertyUtil.getLong("io.netty.allocation.cacheTrimIntervalMillis", 0);
 
-        DEFAULT_USE_CACHE_FOR_ALL_THREADS = SystemPropertyUtil.getBoolean(
-                "io.netty.allocator.useCacheForAllThreads", true);
+        DEFAULT_USE_CACHE_FOR_ALL_THREADS = SystemPropertyUtil.getBoolean("io.netty.allocator.useCacheForAllThreads", true);
 
-        DEFAULT_DIRECT_MEMORY_CACHE_ALIGNMENT = getInt(
-                "io.netty.allocator.directMemoryCacheAlignment", 0);
+        DEFAULT_DIRECT_MEMORY_CACHE_ALIGNMENT = getInt("io.netty.allocator.directMemoryCacheAlignment", 0);
 
         // Use 1023 by default as we use an ArrayDeque as backing storage which will then allocate an internal array
         // of 1024 elements. Otherwise we would allocate 2048 and only use 1024 which is wasteful.
         // 默认情况下使用1023，因为我们使用ArrayDeque作为后备存储，然后将分配1024个元素的内部数组。
         // 否则我们将分配2048并且仅使用1024这是浪费
-        DEFAULT_MAX_CACHED_BYTEBUFFERS_PER_CHUNK = getInt(
-                "io.netty.allocator.maxCachedByteBuffersPerChunk", 1023);
+        DEFAULT_MAX_CACHED_BYTEBUFFERS_PER_CHUNK = getInt("io.netty.allocator.maxCachedByteBuffersPerChunk", 1023);
 
         if (logger.isDebugEnabled()) {
             logger.debug("-Dio.netty.allocator.numHeapArenas: {}", DEFAULT_NUM_HEAP_ARENA);
@@ -192,8 +191,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
             logger.debug("-Dio.netty.allocator.cacheTrimInterval: {}", DEFAULT_CACHE_TRIM_INTERVAL);
             logger.debug("-Dio.netty.allocator.cacheTrimIntervalMillis: {}", DEFAULT_CACHE_TRIM_INTERVAL_MILLIS);
             logger.debug("-Dio.netty.allocator.useCacheForAllThreads: {}", DEFAULT_USE_CACHE_FOR_ALL_THREADS);
-            logger.debug("-Dio.netty.allocator.maxCachedByteBuffersPerChunk: {}",
-                    DEFAULT_MAX_CACHED_BYTEBUFFERS_PER_CHUNK);
+            logger.debug("-Dio.netty.allocator.maxCachedByteBuffersPerChunk: {}", DEFAULT_MAX_CACHED_BYTEBUFFERS_PER_CHUNK);
         }
     }
 
@@ -299,7 +297,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         //检查参数
         checkPositiveOrZero(nDirectArena, "nDirectArena");
 
-        //检查参数,直接内存缓存对齐此参数是2的N次幂
+        //检查参数,直接内存缓存对齐此参数是2的N次幂，能够填充的前提条件是java中支持unsafe
         checkPositiveOrZero(directMemoryCacheAlignment, "directMemoryCacheAlignment");
         if (directMemoryCacheAlignment > 0 && !isDirectMemoryCacheAlignmentSupported()) {
             throw new IllegalArgumentException("directMemoryCacheAlignment is not supported");
@@ -377,11 +375,13 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     }
 
     /**
+     * chunkSize等于pageSize<<maxOrder
      * @param pageSize
      * @param maxOrder 最大order
      * @return
      */
     private static int validateAndCalculateChunkSize(int pageSize, int maxOrder) {
+        //chunk最大的深度不能超过14
         if (maxOrder > 14) {
             throw new IllegalArgumentException("maxOrder: " + maxOrder + " (expected: 0-14)");
         }
@@ -390,9 +390,9 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
         // 确保生成的chunkSize不会溢出。
         int chunkSize = pageSize;
         for (int i = maxOrder; i > 0; i--) {
+            //chunkSize不能大于最大标准的一半
             if (chunkSize > MAX_CHUNK_SIZE / 2) {
-                throw new IllegalArgumentException(String.format(
-                        "pageSize (%d) << maxOrder (%d) must not exceed %d", pageSize, maxOrder, MAX_CHUNK_SIZE));
+                throw new IllegalArgumentException(String.format("pageSize (%d) << maxOrder (%d) must not exceed %d", pageSize, maxOrder, MAX_CHUNK_SIZE));
             }
             chunkSize <<= 1;
         }
@@ -436,13 +436,12 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     protected ByteBuf newDirectBuffer(int initialCapacity, int maxCapacity) {
         //获得当前线程的缓存
         PoolThreadCache cache = threadCache.get();
-        //获得变量
+        //获得和线程绑定的相关的arena
         PoolArena<ByteBuffer> directArena = cache.directArena;
 
         final ByteBuf buf;
         if (directArena != null) {
-            //缓存不存在
-            //直接形成分配
+            //arena是最直接的分配入口，通过与线程级别的cache结合，进行相关的内存的分配
             buf = directArena.allocate(cache, initialCapacity, maxCapacity);
         } else {
             //使用UnpooledUnsafeDirectByteBuf
