@@ -342,6 +342,11 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         }
     }
 
+    /**
+     * 任何被执行的task都是任务，被添加到队列中
+     * @param task 待运行的任务
+     * @return 是否添加成功
+     */
     final boolean offerTask(Runnable task) {
         if (isShutdown()) {
             reject();
@@ -792,6 +797,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         addTask(task);
         //如果不在事件循环中，开启线程，进行执行
         if (!inEventLoop) {
+            //开启事件循环器的线程
             startThread();
 
             //如果关闭了
@@ -944,6 +950,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         executor.execute(new Runnable() {
             @Override
             public void run() {
+                //当前线程
                 thread = Thread.currentThread();
                 if (interrupted) {
                     thread.interrupt();

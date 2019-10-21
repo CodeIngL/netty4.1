@@ -315,7 +315,8 @@ public class ResourceLeakDetector<T> {
      * 报告一下泄露状态，日志级别是error才报告
      */
     private void reportLeak() {
-        if (!logger.isErrorEnabled()) { //不是error级别就不管泄露了
+        if (!logger.isErrorEnabled()) {
+            //不是error级别就不管泄露了
             clearRefQueue();
             return;
         }
@@ -329,6 +330,7 @@ public class ResourceLeakDetector<T> {
                 break;
             }
 
+            //清除失败则说明，正确被回收了
             if (!ref.dispose()) {
                 continue;
             }
@@ -458,9 +460,20 @@ public class ResourceLeakDetector<T> {
          * away. High contention only happens when there are very few existing records, which is only likely when the
          * object isn't shared! If this is a problem, the loop can be aborted and the record dropped, because another
          * thread won the race.
+         *
+         * <p>
+         *     当堆栈中出现更多记录时，此方法通过指数回退来工作。每条记录都有1/2 ^ n的机会删除最上面的记录，并用自己替换。它具有许多方便的属性：
+         * 当前记录始终被记录。这是由于比较和交换删除了最高的记录，而不是要推送的记录。
+         * 最后的访问将始终被记录。这是1的属性。
+         * 根据概率分布，可以保留比目标更多的记录。
+         * 精确记录堆栈中元素的数量很容易，因为每个元素都必须知道堆栈的高度。
+         * 在此特定实现中，还具有一些优点。线程局部随机数用于决定是否应记录某些内容。这意味着，如果存在确定性的访问模式，则现在可以查看发生了哪些其他访问，而不必总是删除它们。其次，在TARGET_RECORDS访问之后，发生退避。这与典型的访问模式相匹配，在该模式中，访问次数较多（即缓存的缓冲区）或访问次数较少（临时缓冲区），但访问次数之间很少。
+         * 当大多数记录将被丢弃时，使用原子避免了对大量访问进行序列化。仅当现有记录很少时才发生高争用，这仅在不共享对象时才有可能！如果这是一个问题，则可以终止循环并删除记录，因为另一个线程赢得了比赛。
+         * </p>
          */
         private void record0(Object hint) {
             // Check TARGET_RECORDS > 0 here to avoid similar check before remove from and add to lastRecords
+            // 在此处检查TARGET_RECORDS> 0，以避免类似的检查，然后从中删除并添加到lastRecords
             if (TARGET_RECORDS > 0) {
                 Record oldHead;
                 Record prevHead;
@@ -488,6 +501,10 @@ public class ResourceLeakDetector<T> {
             }
         }
 
+        /**
+         * 清除成功
+         * @return
+         */
         boolean dispose() {
             /**
              * 清除此reference对象。 调用此方法不会导致此reference入队。
@@ -500,18 +517,27 @@ public class ResourceLeakDetector<T> {
 
         @Override
         public boolean close() {
+            //从最终队列中删除
             if (allLeaks.remove(this)) {
                 // Call clear so the reference is not even enqueued.
+                // 调用clear，这样就不会将引用排队。
                 clear();
+                //清除引用
                 headUpdater.set(this, null);
                 return true;
             }
             return false;
         }
 
+        /**
+         *
+         * @param trackedObject
+         * @return
+         */
         @Override
         public boolean close(T trackedObject) {
             // Ensure that the object that was tracked is the same as the one that was passed to close(...).
+            // 确保跟踪的对象与传递给close（...）的对象相同。
             assert trackedHash == System.identityHashCode(trackedObject);
 
             try {

@@ -130,6 +130,7 @@ public abstract class Recycler<T> {
         @Override
         protected void onRemoval(Stack<T> value) {
             // Let us remove the WeakOrderQueue from the WeakHashMap directly if its safe to remove some overhead
+            // 如果可以安全地除去一些开销，让我们直接从WeakHashMap中删除WeakOrderQueue
             if (value.threadRef.get() == Thread.currentThread()) {
                if (DELAYED_RECYCLED.isSet()) {
                    DELAYED_RECYCLED.get().remove(value);
@@ -256,6 +257,7 @@ public abstract class Recycler<T> {
             }
 
             Stack<?> stack = this.stack;
+            //两个id等，或者站为空，异常
             if (lastRecycledId != recycleId || stack == null) {
                 throw new IllegalStateException("recycled already");
             }
@@ -274,7 +276,7 @@ public abstract class Recycler<T> {
 
     // a queue that makes only moderate guarantees about visibility: items are seen in the correct order,
     // but we aren't absolutely guaranteed to ever see anything at all, thereby keeping the queue cheap to maintain
-    // 一个只对可见性做出适度保证的队列：item按正确顺序查看，但我们并不绝对保证看到任何东西，从而保持队列便宜维护
+    // 一个只对可见性做出适度保证的队列：item按正确顺序查看，但我们并不绝对保证看到任何东西，从而保持队列简单的维护
     private static final class WeakOrderQueue {
 
         static final WeakOrderQueue DUMMY = new WeakOrderQueue();
@@ -585,6 +587,7 @@ public abstract class Recycler<T> {
         DefaultHandle<T> pop() {
             int size = this.size;
             if (size == 0) {
+                //清除失败
                 if (!scavenge()) {
                     return null;
                 }
@@ -615,6 +618,10 @@ public abstract class Recycler<T> {
             return false;
         }
 
+        /**
+         * 清除一部分，将发生相关转移到本线程下。
+         * @return
+         */
         boolean scavengeSome() {
             WeakOrderQueue prev;
             WeakOrderQueue cursor = this.cursor;
@@ -705,6 +712,11 @@ public abstract class Recycler<T> {
             this.size = size + 1;
         }
 
+        /**
+         * 跨线程push
+         * @param item
+         * @param thread
+         */
         private void pushLater(DefaultHandle<?> item, Thread thread) {
             // we don't want to have a ref to the queue as the value in our weak map
             // so we null it out; to ensure there are no races with restoring it later
@@ -713,16 +725,16 @@ public abstract class Recycler<T> {
             // 所以我们把它搞清楚了; 确保以后没有比赛恢复
             // 我们在这里强加一个内存排序（x86上没有操作）
 
-            //获得由线程维护的映射
+            //获得由线程维护的映射，每个线程维护了stack和WeakOrderQueue的map
             Map<Stack<?>, WeakOrderQueue> delayedRecycled = DELAYED_RECYCLED.get();
             WeakOrderQueue queue = delayedRecycled.get(this);
             if (queue == null) {
 
                 if (delayedRecycled.size() >= maxDelayedQueues) {
                     // Add a dummy queue so we know we should drop the object
-                    // 添加一个虚拟队列，以便我们知道应该删除该对象
-                    // 满了
+                    // 添加一个虚拟队列，以便我们知道应该删除该对象 满了
                     delayedRecycled.put(this, WeakOrderQueue.DUMMY);
+                    //直接返回
                     return;
                 }
                 // Check if we already reached the maximum number of delayed queues and if we can allocate at all.
@@ -731,12 +743,15 @@ public abstract class Recycler<T> {
                     // drop object
                     return;
                 }
+                //将这个stack和对应的队列添加进当前线程的回收map找那个
                 delayedRecycled.put(this, queue);
             } else if (queue == WeakOrderQueue.DUMMY) {
                 // drop object
+                // 虚拟节点，我们直接抛弃这个对象
                 return;
             }
 
+            //添加这个队列中
             queue.add(item);
         }
 

@@ -90,6 +90,9 @@ public abstract class AbstractReferenceCounted implements ReferenceCounted {
 
     /**
      * Called once {@link #refCnt()} is equals 0.
+     * <p>
+     *     {@link #refCnt()}等于0时调用。
+     * </p>
      */
     protected abstract void deallocate();
 }

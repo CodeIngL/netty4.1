@@ -71,23 +71,36 @@ public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
         return 2;
     }
 
+    /**
+     * 真实的引用计数
+     * @param rawCnt
+     * @return
+     */
     private static int realRefCnt(int rawCnt) {
         return rawCnt != 2 && rawCnt != 4 && (rawCnt & 1) != 0 ? 0 : rawCnt >>> 1;
     }
 
     /**
      * Like {@link #realRefCnt(int)} but throws if refCnt == 0
+     * 返回引用计数
      */
     private static int toLiveRealRefCnt(int rawCnt, int decrement) {
         if (rawCnt == 2 || rawCnt == 4 || (rawCnt & 1) == 0) {
             return rawCnt >>> 1;
         }
         // odd rawCnt => already deallocated
+        // 奇数rawCnt =>已经释放
         throw new IllegalReferenceCountException(0, -decrement);
     }
 
+    /**
+     * 获得实例的引用计数，快照
+     * @param instance
+     * @return
+     */
     private int nonVolatileRawCnt(T instance) {
         // TODO: Once we compile against later versions of Java we can replace the Unsafe usage here by varhandles.
+        // TODO：在针对更高版本的Java进行编译后，可以在这里用varhandles代替Unsafe用法。
         final long offset = unsafeOffset();
         return offset != -1 ? PlatformDependent.getInt(instance, offset) : updater().get(instance);
     }
@@ -96,6 +109,11 @@ public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
         return realRefCnt(updater().get(instance));
     }
 
+    /**
+     * 是被引用计数着的
+     * @param instance
+     * @return
+     */
     public final boolean isLiveNonVolatile(T instance) {
         final long offset = unsafeOffset();
         final int rawCnt = offset != -1 ? PlatformDependent.getInt(instance, offset) : updater().get(instance);
@@ -145,7 +163,9 @@ public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
     }
 
     public final boolean release(T instance) {
+        //获得引用计数
         int rawCnt = nonVolatileRawCnt(instance);
+        //如果没有释放
         return rawCnt == 2 ? tryFinalRelease0(instance, 2) || retryRelease0(instance, 1)
                 : nonFinalRelease0(instance, 1, rawCnt, toLiveRealRefCnt(rawCnt, 1));
     }
@@ -157,6 +177,12 @@ public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
                 : nonFinalRelease0(instance, decrement, rawCnt, realCnt);
     }
 
+    /**
+     * 尝试最终的释放，任何奇数都可以
+     * @param instance
+     * @param expectRawCnt
+     * @return
+     */
     private boolean tryFinalRelease0(T instance, int expectRawCnt) {
         return updater().compareAndSet(instance, expectRawCnt, 1); // any odd number will work
     }
@@ -164,21 +190,26 @@ public abstract class ReferenceCountUpdater<T extends ReferenceCounted> {
     private boolean nonFinalRelease0(T instance, int decrement, int rawCnt, int realCnt) {
         if (decrement < realCnt
                 // all changes to the raw count are 2x the "real" change - overflow is OK
+                // 原始计数的所有更改均为“真实”更改的2倍-溢出正常
                 && updater().compareAndSet(instance, rawCnt, rawCnt - (decrement << 1))) {
             return false;
         }
+        //尝试释放
         return retryRelease0(instance, decrement);
     }
 
     private boolean retryRelease0(T instance, int decrement) {
         for (;;) {
+            //获得原始的引用计数，获得真实的引用计数
             int rawCnt = updater().get(instance), realCnt = toLiveRealRefCnt(rawCnt, decrement);
             if (decrement == realCnt) {
+                //尝试最终的释放
                 if (tryFinalRelease0(instance, rawCnt)) {
                     return true;
                 }
             } else if (decrement < realCnt) {
                 // all changes to the raw count are 2x the "real" change
+                // 原始计数的所有更改均为“实际”更改的2倍
                 if (updater().compareAndSet(instance, rawCnt, rawCnt - (decrement << 1))) {
                     return false;
                 }

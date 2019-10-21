@@ -38,11 +38,13 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
         }
     };
 
+    //线程ThreadLocal
     private static final FastThreadLocal<CodecOutputLists> CODEC_OUTPUT_LISTS_POOL =
             new FastThreadLocal<CodecOutputLists>() {
                 @Override
                 protected CodecOutputLists initialValue() throws Exception {
                     // 16 CodecOutputList per Thread are cached.
+                    // 默认会有16个进行缓存
                     return new CodecOutputLists(16);
                 }
             };
@@ -146,6 +148,7 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
             insert(size, element);
         } catch (IndexOutOfBoundsException ignore) {
             // This should happen very infrequently so we just catch the exception and try again.
+            // 这种情况很少发生，因此我们只捕获异常，然后重试。
             expandArray();
             insert(size, element);
         }
@@ -239,6 +242,9 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
         insertSinceRecycled = true;
     }
 
+    /**
+     * 两倍扩容
+     */
     private void expandArray() {
         // double capacity
         int newCapacity = array.length << 1;
