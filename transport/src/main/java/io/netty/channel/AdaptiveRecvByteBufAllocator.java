@@ -55,9 +55,14 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
     //减少
     private static final int INDEX_DECREMENT = 1;
 
-    //规格数组
+    //规格数组，512以下使用16递增规格，之上使用double进行递增规格，直到超过int的max
     private static final int[] SIZE_TABLE;
 
+    /**
+     * 算法和其他分配是一样
+     * 在16到512中使用16进行区分递增
+     *
+     */
     static {
         List<Integer> sizeTable = new ArrayList<Integer>();
         for (int i = 16; i < 512; i += 16) {
@@ -81,6 +86,11 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
     @Deprecated
     public static final AdaptiveRecvByteBufAllocator DEFAULT = new AdaptiveRecvByteBufAllocator();
 
+    /**
+     * 根据参数获得合适的规格index
+     * @param size
+     * @return
+     */
     private static int getSizeTableIndex(final int size) {
         for (int low = 0, high = SIZE_TABLE.length - 1;;) {
             if (high < low) {

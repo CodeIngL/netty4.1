@@ -172,6 +172,8 @@ public final class ChannelOutboundBuffer {
         // where added in the meantime.
         //
         // See https://github.com/netty/netty/issues/2577
+        //如果之前已经有刷新并且在此期间未添加任何新消息，则无需处理所有条目。
+        //参见https://github.com/netty/netty/issues/2577
         Entry entry = unflushedEntry;
         if (entry != null) {
             if (flushedEntry == null) {

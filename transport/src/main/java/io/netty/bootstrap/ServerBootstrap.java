@@ -55,6 +55,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
     private final Map<ChannelOption<?>, Object> childOptions = new LinkedHashMap<ChannelOption<?>, Object>();
     //子通道配置属性
     private final Map<AttributeKey<?>, Object> childAttrs = new LinkedHashMap<AttributeKey<?>, Object>();
+    //服务端引导类配置属性
     private final ServerBootstrapConfig config = new ServerBootstrapConfig(this);
     //对于io事件循环，该引导类往往有一个监听事件循环和对应其衍生出来的事件循环我们称之为子事件循环
     private volatile EventLoopGroup childGroup;

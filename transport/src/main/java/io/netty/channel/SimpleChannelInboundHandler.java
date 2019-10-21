@@ -72,7 +72,9 @@ import io.netty.util.internal.TypeParameterMatcher;
  */
 public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandlerAdapter {
 
+    //类型匹配器
     private final TypeParameterMatcher matcher;
+    //是否自动释放
     private final boolean autoRelease;
 
     /**
@@ -144,6 +146,12 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
      * {@code messageReceived(ChannelHandlerContext, I)} in 5.0.</strong>
      * <p>
      * Is called for each message of type {@link I}.
+     * <p>
+     *     请记住，此方法将在5.0中重命名为messageReceived（ChannelHandlerContext，I）。
+     * </p>
+     * <p>
+     *     为类型I的每条消息调用。
+     * </p>
      *
      * @param ctx the {@link ChannelHandlerContext} which this {@link SimpleChannelInboundHandler}
      *            belongs to

@@ -435,6 +435,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      */
     protected abstract class AbstractUnsafe implements Unsafe {
 
+        //每个channel都有一个输出buffer
         private volatile ChannelOutboundBuffer outboundBuffer = new ChannelOutboundBuffer(AbstractChannel.this);
         private RecvByteBufAllocator.Handle recvHandle;
         private boolean inFlush0;
@@ -490,15 +491,14 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
             //事件循环和本channel是否兼容
             if (!isCompatible(eventLoop)) {
-                promise.setFailure(
-                        new IllegalStateException("incompatible event loop type: " + eventLoop.getClass().getName()));
+                promise.setFailure(new IllegalStateException("incompatible event loop type: " + eventLoop.getClass().getName()));
                 return;
             }
 
-            //建立联系
+            //为channel进行绑定事件循环器
             AbstractChannel.this.eventLoop = eventLoop;
 
-            //所处的地方是位于事件循环线程中，是直接注册，否则构建一个任务，提交给事件循环处理
+            //所处的地方是位于事件循环线程中，是直接注册，否则构建一个任务，稍后提交给事件循环处理
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
@@ -510,9 +510,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                         }
                     });
                 } catch (Throwable t) {
-                    logger.warn(
-                            "Force-closing a channel whose registration task was not accepted by an event loop: {}",
-                            AbstractChannel.this, t);
+                    logger.warn("Force-closing a channel whose registration task was not accepted by an event loop: {}", AbstractChannel.this, t);
                     closeForcibly();
                     closeFuture.setClosed();
                     safeSetFailure(promise, t);
@@ -950,11 +948,13 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         public final void flush() {
             assertEventLoop();
 
+            //获得写缓冲区
             ChannelOutboundBuffer outboundBuffer = this.outboundBuffer;
             if (outboundBuffer == null) {
                 return;
             }
 
+            //进行flush
             outboundBuffer.addFlush();
             flush0();
         }

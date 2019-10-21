@@ -53,10 +53,15 @@ import static io.netty.channel.ChannelHandlerMask.MASK_USER_EVENT_TRIGGERED;
 import static io.netty.channel.ChannelHandlerMask.MASK_WRITE;
 import static io.netty.channel.ChannelHandlerMask.mask;
 
+/**
+ * context向下传输信息
+ */
 abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, ResourceLeakHint {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractChannelHandlerContext.class);
+    //下一个
     volatile AbstractChannelHandlerContext next;
+    //前一个
     volatile AbstractChannelHandlerContext prev;
 
     private static final AtomicIntegerFieldUpdater<AbstractChannelHandlerContext> HANDLER_STATE_UPDATER =
@@ -92,6 +97,8 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
 
     // Lazily instantiated tasks used to trigger events to a handler with different executor.
     // There is no need to make this volatile as at worse it will just create a few more instances then needed.
+    // 延迟实例化的任务，用于向具有不同执行程序的处理程序触发事件。
+    // 不需要使它变得不稳定，因为更糟糕的是，它只会创建更多需要的实例。
     private Tasks invokeTasks;
 
     private volatile int handlerState = INIT;
@@ -291,6 +298,10 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         }
     }
 
+    /**
+     * 异常通知
+     * @param cause
+     */
     private void invokeExceptionCaught(final Throwable cause) {
         if (invokeHandler()) {
             try {
@@ -386,19 +397,28 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return this;
     }
 
+    /**
+     * 触发读完成
+     * @param next
+     */
     static void invokeChannelReadComplete(final AbstractChannelHandlerContext next) {
         EventExecutor executor = next.executor();
         if (executor.inEventLoop()) {
             next.invokeChannelReadComplete();
         } else {
+            //不在事件循环中
             Tasks tasks = next.invokeTasks;
             if (tasks == null) {
+                //构造
                 next.invokeTasks = tasks = new Tasks(next);
             }
             executor.execute(tasks.invokeChannelReadCompleteTask);
         }
     }
 
+    /**
+     * 完成读事件
+     */
     private void invokeChannelReadComplete() {
         if (invokeHandler()) {
             try {
@@ -834,6 +854,10 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         PromiseNotificationUtil.tryFailure(promise, cause, promise instanceof VoidChannelPromise ? null : logger);
     }
 
+    /**
+     * 通知异常
+     * @param cause
+     */
     private void notifyHandlerException(Throwable cause) {
         if (inExceptionCaught(cause)) {
             if (logger.isWarnEnabled()) {
@@ -843,7 +867,6 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
             }
             return;
         }
-
         invokeExceptionCaught(cause);
     }
 
@@ -1167,6 +1190,9 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         }
     }
 
+    /**
+     * 构建一个任务task
+     */
     private static final class Tasks {
         private final AbstractChannelHandlerContext next;
         private final Runnable invokeChannelReadCompleteTask = new Runnable() {

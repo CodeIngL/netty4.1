@@ -59,7 +59,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioEventLoop.class);
 
-    private static final int CLEANUP_INTERVAL = 256; // XXX Hard-coded value, but won't need customization.
+    private static final int CLEANUP_INTERVAL = 256; // XXX Hard-coded va*lue, but won't need customization.
 
     private static final boolean DISABLE_KEY_SET_OPTIMIZATION = //disable_key_set_optimization
             SystemPropertyUtil.getBoolean("io.netty.noKeySetOptimization", false);
@@ -707,10 +707,11 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             // 请参阅https://github.com/netty/netty/issues/2363
             selectedKeys.keys[i] = null;
 
-            //获得选择键上的channel，对于server，就是serverS
+            //获得选择键上的channel，对于server，就是serverSocketChannel
             final Object a = k.attachment();
 
             if (a instanceof AbstractNioChannel) {
+                //处理选择键
                 processSelectedKey(k, (AbstractNioChannel) a);
             } else {
                 @SuppressWarnings("unchecked")

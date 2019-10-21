@@ -151,6 +151,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
             final ByteBufAllocator allocator = config.getAllocator();
             //获得处理器，并重置
             final RecvByteBufAllocator.Handle allocHandle = recvBufAllocHandle();
+            //重置
             allocHandle.reset(config);
 
             ByteBuf byteBuf = null;

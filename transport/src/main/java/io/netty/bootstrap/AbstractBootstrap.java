@@ -272,6 +272,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * 构建一个Channel并绑定它
      * Create a new {@link Channel} and bind it.
+     * 构建一个新的Channel并进行绑定，通常是一个服务端的的入口
      */
     public ChannelFuture bind(int inetPort) {
         return bind(new InetSocketAddress(inetPort));
@@ -550,6 +551,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         return buf.toString();
     }
 
+    /**
+     * 挂起的未注册使用的ChannelPromise
+     */
     static final class PendingRegistrationPromise extends DefaultChannelPromise {
 
         // Is set to the correct EventExecutor once the registration was successful. Otherwise it will

@@ -149,6 +149,9 @@ public class DefaultFileRegion extends AbstractReferenceCounted implements FileR
         return written;
     }
 
+    /**
+     * 尝试关闭文件描述符
+     */
     @Override
     protected void deallocate() {
         FileChannel file = this.file;

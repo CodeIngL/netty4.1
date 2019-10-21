@@ -28,12 +28,13 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * Abstract base class for {@link EventLoop}s that execute all its submitted tasks in a single thread.
+ * 事件循环的基本类，以单线程的方式进行执行所有提交上来的任务
  *
  */
 public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor implements EventLoop {
 
-    protected static final int DEFAULT_MAX_PENDING_TASKS = Math.max(16,
-            SystemPropertyUtil.getInt("io.netty.eventLoop.maxPendingTasks", Integer.MAX_VALUE));
+    //支持最大挂起的任务量
+    protected static final int DEFAULT_MAX_PENDING_TASKS = Math.max(16, SystemPropertyUtil.getInt("io.netty.eventLoop.maxPendingTasks", Integer.MAX_VALUE));
 
     private final Queue<Runnable> tailTasks;
 
@@ -82,8 +83,8 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
 
     /**
      * 注册一个支持异步获取结果的ChannelPromise
-     * @param promise
-     * @return
+     * @param promise 构建一个Promise，promise是一种软件设计。
+     * @return 返回一个future，promise本质上也是一种future
      */
     @Override
     public ChannelFuture register(final ChannelPromise promise) {

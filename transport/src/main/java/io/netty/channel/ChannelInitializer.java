@@ -102,6 +102,9 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelInbou
 
     /**
      * {@inheritDoc} If override this method ensure you call super!
+     * <p>
+     *     在将ChannelHandler添加到实际上下文中并可以处理事件后调用。 如果重写此方法，请确保您调用super！
+     * </p>
      */
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
