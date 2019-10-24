@@ -307,6 +307,12 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         return StringUtil.simpleClassName(this) + "(directByDefault: " + directByDefault + ')';
     }
 
+    /**
+     * 重新计算最小的容量
+     * @param minNewCapacity
+     * @param maxCapacity
+     * @return
+     */
     @Override
     public int calculateNewCapacity(int minNewCapacity, int maxCapacity) {
         checkPositiveOrZero(minNewCapacity, "minNewCapacity");
@@ -315,6 +321,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
                     "minNewCapacity: %d (expected: not greater than maxCapacity(%d)",
                     minNewCapacity, maxCapacity));
         }
+        //阈值是4M
         final int threshold = CALCULATE_THRESHOLD; // 4 MiB page
 
         if (minNewCapacity == threshold) {
@@ -322,6 +329,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         }
 
         // If over threshold, do not double but just increase by threshold.
+        // 如果超过阈值，则不要加倍，而只需增加阈值即可。
         if (minNewCapacity > threshold) {
             int newCapacity = minNewCapacity / threshold * threshold;
             if (newCapacity > maxCapacity - threshold) {
@@ -333,6 +341,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         }
 
         // Not over threshold. Double up to 4 MiB, starting from 64.
+        // 不超过阈值。 从64开始，最多加倍4 MiB。
         int newCapacity = 64;
         while (newCapacity < minNewCapacity) {
             newCapacity <<= 1;

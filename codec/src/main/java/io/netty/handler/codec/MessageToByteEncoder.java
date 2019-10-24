@@ -165,6 +165,9 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     /**
      * Encode a message into a {@link ByteBuf}. This method will be called for each written message that can be handled
      * by this encoder.
+     * <p>
+     *     将消息编码为{@link ByteBuf}。 对于此编码器可以处理的每条书面消息，将调用此方法。
+     * </p>
      *
      * @param ctx the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
      * @param msg the message to encode

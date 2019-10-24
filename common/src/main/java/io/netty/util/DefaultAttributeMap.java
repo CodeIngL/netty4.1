@@ -126,6 +126,10 @@ public class DefaultAttributeMap implements AttributeMap {
         return key.id() & MASK;
     }
 
+    /**
+     * 默认的属性
+     * @param <T>
+     */
     @SuppressWarnings("serial")
     private static final class DefaultAttribute<T> extends AtomicReference<T> implements Attribute<T> {
 

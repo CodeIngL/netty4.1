@@ -17,6 +17,9 @@ package io.netty.util;
 
 /**
  * Holds {@link Attribute}s which can be accessed via {@link AttributeKey}.
+ * <p>
+ *     包含可以通过AttributeKey访问的属性。 实现必须是线程安全的。
+ * </p>
  *
  * Implementations must be Thread-safe.
  */
@@ -24,6 +27,9 @@ public interface AttributeMap {
     /**
      * Get the {@link Attribute} for the given {@link AttributeKey}. This method will never return null, but may return
      * an {@link Attribute} which does not have a value set yet.
+     * <p>
+     *      获取给定{@link AttributeKey}的属性。 该方法永远不会返回null，但可能会返回尚未设置值的{@link Attribute} 。
+     * </p>
      */
     <T> Attribute<T> attr(AttributeKey<T> key);
 

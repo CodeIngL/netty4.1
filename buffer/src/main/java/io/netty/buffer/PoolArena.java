@@ -100,8 +100,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     private final LongCounter deallocationsHuge = PlatformDependent.newLongCounter();
 
     // Number of thread caches backed by this arena.
-    // 此arena支持的ThreadCache的数量。
-    // 每当被线程持有引用的时候就会进行++，反应被持有线程的数量
+    // 此arena支持的ThreadCache的数量。 每当被线程持有引用的时候就会进行++，反应被持有线程的数量
     final AtomicInteger numThreadCaches = new AtomicInteger();
 
     // TODO: Test if adding padding helps under contention
@@ -525,7 +524,9 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     }
 
     int alignCapacity(int reqCapacity) {
+        //尾缀
         int delta = reqCapacity & directMemoryCacheAlignmentMask;
+        //向上规范化
         return delta == 0 ? reqCapacity : reqCapacity + directMemoryCacheAlignment - delta;
     }
 

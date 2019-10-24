@@ -318,7 +318,9 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         /**
          * ServerBootstrap的辅助类，用于帮助SocketServer的处理，
          * msg是子Channel对于nio来说是NioSocketChannel，
-         * 其绑定了产生的他的Channel（NioServerSocketChannel）和与其绑定的Socket
+         * 其绑定了产生的他的Channel（NioServerSocketChannel）和与其绑定的Socket。
+         *
+         * 当server接收到监听的时候，构建了相应的socketChannel进行到后期处理
          *
          * @param ctx
          * @param msg

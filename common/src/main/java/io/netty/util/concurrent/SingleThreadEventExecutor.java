@@ -105,6 +105,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     private final int maxPendingTasks;
     private final RejectedExecutionHandler rejectedExecutionHandler;
 
+    //最后执行任务的时间
     private long lastExecutionTime;
 
     @SuppressWarnings({ "FieldMayBeFinal", "unused" })
@@ -290,6 +291,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         long nanoTime = AbstractScheduledEventExecutor.nanoTime();
         Runnable scheduledTask  = pollScheduledTask(nanoTime);
         while (scheduledTask != null) {
+            //尝试将从调度队列中的任务转移到正常的任务队列中
             if (!taskQueue.offer(scheduledTask)) {
                 // No space left in the task queue add it back to the scheduledTaskQueue so we pick it up again.
                 // 任务队列中没有剩余空间将其添加回scheduledTaskQueue，因此我们可以再次提取它。
@@ -415,6 +417,10 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     /**
      * Poll all tasks from the task queue and run them via {@link Runnable#run()} method.  This method stops running
      * the tasks in the task queue and returns if it ran longer than {@code timeoutNanos}.
+     * <p>
+     *     从任务队列中轮询所有任务，然后通过{@link Runnable#run()} 方法运行它们。
+     *     此方法停止运行任务队列中的任务，如果运行时间超过{@code timeoutNanos}.，则返回
+     * </p>
      */
     protected boolean runAllTasks(long timeoutNanos) {
         fetchFromScheduledTaskQueue();
@@ -434,8 +440,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
             // Check timeout every 64 tasks because nanoTime() is relatively expensive.
             // XXX: Hard-coded value - will make it configurable if it is really a problem.
-            // 检查每64个任务的超时，因为nanoTime（）相对昂贵。
-            // XXX：硬编码值 - 如果确实存在问题，将使其可配置。
+            // 检查每64个任务的超时，因为nanoTime（）相对昂贵。 XXX：硬编码值 - 如果确实存在问题，将使其可配置。
             if ((runTasks & 0x3F) == 0) {
                 lastExecutionTime = ScheduledFutureTask.nanoTime();
                 if (lastExecutionTime >= deadline) {

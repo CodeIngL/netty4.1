@@ -363,10 +363,13 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      * @param maxFrameLength      the maximum length of the frame.  If the length of the frame is
      *                            greater than this value, {@link TooLongFrameException} will be
      *                            thrown.
-     * @param lengthFieldOffset   the offset of the length field
-     * @param lengthFieldLength   the length of the length field
-     * @param lengthAdjustment    the compensation value to add to the value of the length field
-     * @param initialBytesToStrip the number of first bytes to strip out from the decoded frame
+     *                            <p>
+     *                            maxFrameLength –帧的最大长度。 如果帧的长度大于此值，则将抛出{@link TooLongFrameException}。
+     *                            </p>
+     * @param lengthFieldOffset   the offset of the length field 长度字段的偏移量
+     * @param lengthFieldLength   the length of the length field 长度字段的长度
+     * @param lengthAdjustment    the compensation value to add to the value of the length field 要添加到长度字段值的补偿值
+     * @param initialBytesToStrip the number of first bytes to strip out from the decoded frame 从解码帧中剥离的第一个字节数
      */
     public LengthFieldBasedFrameDecoder(
             int maxFrameLength,

@@ -57,6 +57,7 @@ public abstract class AbstractByteBuf extends ByteBuf {
         } else {
             checkAccessible = SystemPropertyUtil.getBoolean(LEGACY_PROP_CHECK_ACCESSIBLE, true);
         }
+        //进行检查，边界检查
         checkBounds = SystemPropertyUtil.getBoolean(PROP_CHECK_BOUNDS, true);
         if (logger.isDebugEnabled()) {
             logger.debug("-D{}: {}", PROP_CHECK_ACCESSIBLE, checkAccessible);
@@ -278,20 +279,25 @@ public abstract class AbstractByteBuf extends ByteBuf {
         return this;
     }
 
+    /**
+     * 确保buffer能够写入
+     * @param minWritableBytes 最小写入的字节
+     */
     final void ensureWritable0(int minWritableBytes) {
         ensureAccessible();
         if (minWritableBytes <= writableBytes()) {
             return;
         }
         if (checkBounds) {
+            //最小大于最大的我们放弃掉
             if (minWritableBytes > maxCapacity - writerIndex) {
-                throw new IndexOutOfBoundsException(String.format(
-                        "writerIndex(%d) + minWritableBytes(%d) exceeds maxCapacity(%d): %s",
+                throw new IndexOutOfBoundsException(String.format("writerIndex(%d) + minWritableBytes(%d) exceeds maxCapacity(%d): %s",
                         writerIndex, minWritableBytes, maxCapacity, this));
             }
         }
 
         // Normalize the current capacity to the power of 2.
+        // 将当前容量标准化为2的幂。
         int newCapacity = alloc().calculateNewCapacity(writerIndex + minWritableBytes, maxCapacity);
 
         // Adjust to the new capacity.
