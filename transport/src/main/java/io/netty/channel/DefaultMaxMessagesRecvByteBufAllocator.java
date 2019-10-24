@@ -88,6 +88,7 @@ public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessa
      * Focuses on enforcing the maximum messages per read condition for {@link #continueReading()}.
      */
     public abstract class MaxMessageHandle implements ExtendedHandle {
+        //配置信息
         private ChannelConfig config;
         private int maxMessagePerRead;
         private int totalMessages;

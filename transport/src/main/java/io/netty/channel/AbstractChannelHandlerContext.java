@@ -88,10 +88,12 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
     private final DefaultChannelPipeline pipeline;
     private final String name;
     private final boolean ordered;
+    //支持的方法的掩码
     private final int executionMask;
 
     // Will be set to null if no child executor should be used, otherwise it will be set to the
     // child executor.
+    // 如果不应使用任何子执行器，则将其设置为null；否则，将其设置为子执行器。
     final EventExecutor executor;
     private ChannelFuture succeededFuture;
 
@@ -128,6 +130,9 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return channel().config().getAllocator();
     }
 
+    /**
+     * 如果没有指定使用执行器，我们使用channel上的执行器
+     */
     @Override
     public EventExecutor executor() {
         if (executor == null) {
@@ -402,8 +407,10 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
      * @param next
      */
     static void invokeChannelReadComplete(final AbstractChannelHandlerContext next) {
+        //获得事件处理器
         EventExecutor executor = next.executor();
         if (executor.inEventLoop()) {
+            //事件循环中，向下调用
             next.invokeChannelReadComplete();
         } else {
             //不在事件循环中
@@ -427,6 +434,7 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
                 notifyHandlerException(t);
             }
         } else {
+            //激活向下阅读事件
             fireChannelReadComplete();
         }
     }
@@ -951,6 +959,11 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return false;
     }
 
+    /**
+     * 查找下一个入栈处理器
+     * @param mask
+     * @return
+     */
     private AbstractChannelHandlerContext findContextInbound(int mask) {
         AbstractChannelHandlerContext ctx = this;
         do {
@@ -1023,6 +1036,16 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
      * If this method returns {@code false} we will not invoke the {@link ChannelHandler} but just forward the event.
      * This is needed as {@link DefaultChannelPipeline} may already put the {@link ChannelHandler} in the linked-list
      * but not called {@link ChannelHandler#handlerAdded(ChannelHandlerContext)}.
+     *
+     * <p>
+     *     尽最大努力检测是否已调用ChannelHandler.handlerAdded（ChannelHandlerContext）。
+     *     如果不是，则返回false；如果未调用，则返回true。
+     * </p>
+     * <p>
+     *     如果此方法返回false，我们将不调用ChannelHandler，而只是转发事件。
+     *     这是必需的，因为DefaultChannelPipeline可能已将ChannelHandler放在链接列表中，
+     *     但未称为ChannelHandler.handlerAdded（ChannelHandlerContext）。
+     * </p>
      */
     private boolean invokeHandler() {
         // Store in local variable to reduce volatile reads.
@@ -1195,24 +1218,28 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
      */
     private static final class Tasks {
         private final AbstractChannelHandlerContext next;
+        //执行构建任务
         private final Runnable invokeChannelReadCompleteTask = new Runnable() {
             @Override
             public void run() {
                 next.invokeChannelReadComplete();
             }
         };
+        //执行构建的任务
         private final Runnable invokeReadTask = new Runnable() {
             @Override
             public void run() {
                 next.invokeRead();
             }
         };
+        //执行构建的任务
         private final Runnable invokeChannelWritableStateChangedTask = new Runnable() {
             @Override
             public void run() {
                 next.invokeChannelWritabilityChanged();
             }
         };
+        //执行构建的任务
         private final Runnable invokeFlushTask = new Runnable() {
             @Override
             public void run() {

@@ -58,7 +58,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
     private final class NioMessageUnsafe extends AbstractNioUnsafe {
 
         //读对象的buffer
-        private final List<Object> readBuf = new ArrayList<Object>();
+        private final List<Object> readBuf = new ArrayList<>();
 
         /**
          * read操作
@@ -96,7 +96,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                     exception = t;
                 }
 
-                //大小
+                //获得数量
                 int size = readBuf.size();
                 for (int i = 0; i < size; i ++) {
                     readPending = false;

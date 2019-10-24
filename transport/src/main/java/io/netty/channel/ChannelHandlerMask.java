@@ -81,6 +81,9 @@ final class ChannelHandlerMask {
 
     /**
      * Calculate the {@code executionMask}.
+     * <p>
+     *     计算{@code executionMask}。
+     * </p>
      */
     private static int mask0(Class<? extends ChannelHandler> handlerType) {
         int mask = MASK_EXCEPTION_CAUGHT;

@@ -115,9 +115,12 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * The NIO {@link Selector}.
      */
     private Selector selector;
+    //原生的selector
     private Selector unwrappedSelector;
+    //选中的键集合
     private SelectedSelectionKeySet selectedKeys;
 
+    //提供者
     private final SelectorProvider provider;
 
     /**
@@ -314,6 +317,10 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * Registers an arbitrary {@link SelectableChannel}, not necessarily created by Netty, to the {@link Selector}
      * of this event loop.  Once the specified {@link SelectableChannel} is registered, the specified {@code task} will
      * be executed by this event loop when the {@link SelectableChannel} is ready.
+     * <p>
+     *     向该事件循环的选择器注册一个任意的{@link SelectableChannel}，不一定由Netty创建。
+     *     一旦注册了指定的{@link SelectableChannel}，当{@link SelectableChannel}准备就绪时，此事件循环将执行指定的任务。
+     * </p>
      */
     public void register(final SelectableChannel ch, final int interestOps, final NioTask<?> task) {
         if (ch == null) {
@@ -404,6 +411,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         return selector.keys().size() - cancelledKeys;
     }
 
+    /**
+     * 重建Selector
+     */
     private void rebuildSelector0() {
         final Selector oldSelector = selector;
         final SelectorTuple newSelectorTuple;

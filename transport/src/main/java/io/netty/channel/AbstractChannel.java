@@ -960,7 +960,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         }
 
         /**
-         * 刷新
+         * 输出内容
          */
         @SuppressWarnings("deprecation")
         protected void flush0() {

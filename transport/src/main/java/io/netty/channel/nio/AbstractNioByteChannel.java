@@ -85,6 +85,11 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         return METADATA;
     }
 
+    /**
+     * 是否应该破坏准备好的读事件
+     * @param config
+     * @return
+     */
     final boolean shouldBreakReadReady(ChannelConfig config) {
         return isInputShutdown0() && (inputClosedSeenErrorOnRead || !isAllowHalfClosure(config));
     }
