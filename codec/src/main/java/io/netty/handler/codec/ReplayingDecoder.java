@@ -261,6 +261,50 @@ import java.util.List;
  *         ctx.pipeline().remove(this);
  *     }
  * </pre>
+ * <p>
+ *     ByteToMessageDecoder的一种特殊变体，它可以在阻塞I / O范例中实现非阻塞解码器。
+ * ReplayingDecoder和ByteToMessageDecoder之间的最大区别是，ReplayingDecoder允许您像已收到所有必需的字节一样实现decode（）和decodeLast（）方法，而不是检查所需字节的可用性。 例如，以下ByteToMessageDecoder实现：
+ * </p>
+ *
+ * <pre>
+ * public class IntegerHeaderFrameDecoder extends {@link ByteToMessageDecoder} {
+ *
+ *   {@code @Override}
+ *   protected void decode({@link ChannelHandlerContext} ctx,
+ *                           {@link ByteBuf} buf, List&lt;Object&gt; out) throws Exception {
+ *
+ *     if (buf.readableBytes() &lt; 4) {
+ *        return;
+ *     }
+ *
+ *     buf.markReaderIndex();
+ *     int length = buf.readInt();
+ *
+ *     if (buf.readableBytes() &lt; length) {
+ *        buf.resetReaderIndex();
+ *        return;
+ *     }
+ *
+ *     out.add(buf.readBytes(length));
+ *   }
+ * }
+ * </pre>
+ * is simplified like the following with {@link ReplayingDecoder}:
+ * <pre>
+ * public class IntegerHeaderFrameDecoder
+ *      extends {@link ReplayingDecoder}&lt;{@link Void}&gt; {
+ *
+ *   protected void decode({@link ChannelHandlerContext} ctx,
+ *                           {@link ByteBuf} buf) throws Exception {
+ *
+ *     out.add(buf.readBytes(buf.readInt()));
+ *   }
+ * }
+ * </pre>
+ *
+ * 这是如何运作的？
+ * ReplayingDecoder传递了一个专门的ByteBuf实现，当缓冲区中的数据不足时，该实现将引发某种类型的Error。 在上面的IntegerHeaderFrameDecoder中，您仅假设调用buf.readInt（）时缓冲区中将有4个或更多字节。 如果缓冲区中确实有4个字节，它将返回您期望的整数头。 否则，将引发Error并将控件返回给ReplayingDecoder。 如果ReplayingDecoder捕获到错误，则它将把缓冲区的readerIndex倒回到“初始”位置（即缓冲区的开始），并在缓冲区中接收到更多数据时再次调用encode（..）方法。
+ * 请注意，ReplayingDecoder始终会抛出相同的缓存Error实例，以避免创建新Error并为每次抛出填充其堆栈跟踪的开销
  * @param <S>
  *        the state type which is usually an {@link Enum}; use {@link Void} if state management is
  *        unused

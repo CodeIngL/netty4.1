@@ -43,6 +43,13 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
  * return {@code true} for, the aggregator will finish the aggregation and produce the aggregated message and expect
  * another start message.
  * </p>
+ * <p>
+ *     一个抽象{@link ChannelHandler}，它将一系列消息对象聚合为一条聚合消息。
+ * “一系列消息”由以下内容组成：
+ * 一条开始消息，可以选择包含内容的第一部分，并且
+ * 1条或更多内容消息。
+ * 聚合消息的内容将是开始消息及其后续内容消息的合并内容。 如果此聚合器遇到isLastContentMessage（ByteBufHolder）返回true的内容消息，则该聚合器将完成聚合并生成聚合的消息，并期待另一个启动消息
+ * </p>
  *
  * @param <I> the type that covers both start message and content message
  * @param <S> the type of the start message

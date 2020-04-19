@@ -92,13 +92,14 @@ import java.util.List;
  */
 public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
 
+    //分隔符
     private final ByteBuf[] delimiters;
     private final int maxFrameLength;
     private final boolean stripDelimiter;
     private final boolean failFast;
     private boolean discardingTooLongFrame;
     private int tooLongFrameLength;
-    /** Set only when decoding with "\n" and "\r\n" as the delimiter.  */
+    /** Set only when decoding with "\n" and "\r\n" as the delimiter. 如果分割符是特殊的，我们之间进行转换 */
     private final LineBasedFrameDecoder lineBasedDecoder;
 
     /**
@@ -267,10 +268,14 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
             return lineBasedDecoder.decode(ctx, buffer);
         }
         // Try all delimiters and choose the delimiter which yields the shortest frame.
+        // 尝试遍历所有的分割符，并选择最小的进行操作。
         int minFrameLength = Integer.MAX_VALUE;
         ByteBuf minDelim = null;
+        //遍历分隔符
         for (ByteBuf delim: delimiters) {
+            //帧长度
             int frameLength = indexOf(buffer, delim);
+            //最小帧长度
             if (frameLength >= 0 && frameLength < minFrameLength) {
                 minFrameLength = frameLength;
                 minDelim = delim;

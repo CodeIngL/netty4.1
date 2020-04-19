@@ -48,6 +48,24 @@ import java.util.List;
  * Be aware that you need to call {@link ReferenceCounted#retain()} on messages that are just passed through if they
  * are of type {@link ReferenceCounted}. This is needed as the {@link MessageToMessageEncoder} will call
  * {@link ReferenceCounted#release()} on encoded messages.
+ * <p>
+ *     ChannelOutboundHandlerAdapter，它将一条消息编码为另一条消息。例如，这里是一种将Integer解码为String的实现。
+ * <p>
+ * <pre>
+ *     public class IntegerToStringEncoder extends
+ *             {@link MessageToMessageEncoder}&lt;{@link Integer}&gt; {
+ *
+ *         {@code @Override}
+ *         public void encode({@link ChannelHandlerContext} ctx, {@link Integer} message, List&lt;Object&gt; out)
+ *                 throws {@link Exception} {
+ *             out.add(message.toString());
+ *         }
+ *     }
+ * </pre>
+ * </p>
+ * <p>
+ *      * 请注意，如果消息是ReferenceCounted类型，则需要对刚刚通过的消息调用ReferenceCounted.retain（）。 这是必需的，因为MessageToMessageEncoder将对已编码的消息调用ReferenceCounted.release（）
+ * </p>
  */
 public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerAdapter {
 

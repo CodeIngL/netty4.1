@@ -530,13 +530,17 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
             return null;
         }
 
+        //确切的位置开始，buffer的Index+字段偏移量
         int actualLengthFieldOffset = in.readerIndex() + lengthFieldOffset;
+
+        //长度字段字节数
         long frameLength = getUnadjustedFrameLength(in, actualLengthFieldOffset, lengthFieldLength, byteOrder);
 
         if (frameLength < 0) {
             failOnNegativeLengthField(in, frameLength, lengthFieldEndOffset);
         }
 
+        //帧的长度进行修正。将调整字段和最终的字段偏移量进行结合， lengthFieldOffset + lengthFieldLength
         frameLength += lengthAdjustment + lengthFieldEndOffset;
 
         if (frameLength < lengthFieldEndOffset) {
@@ -554,6 +558,7 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
             return null;
         }
 
+        //是否去除相关的字节
         if (initialBytesToStrip > frameLengthInt) {
             failOnFrameLengthLessThanInitialBytesToStrip(in, frameLength, initialBytesToStrip);
         }
