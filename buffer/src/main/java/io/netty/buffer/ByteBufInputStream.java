@@ -38,6 +38,13 @@ import java.io.InputStream;
  * The endianness of the stream is not always big endian but depends on
  * the endianness of the underlying buffer.
  *
+ * <p>
+ *
+ *     一个InputStream，它从ByteBuf读取数据。
+ * 针对此流的读取操作将在其基础缓冲区的readerIndex处发生，而readerIndex在读取操作期间将增加。 请注意，它最多只能读取在构造时确定的可读字节数。 因此，更新ByteBuf.writerIndex（）不会影响available（）的返回值。
+ * 为了您的方便，此流实现了DataInput。 流的字节序并不总是大字节序，而是取决于基础缓冲区的字节序。
+ * </p>
+ *
  * @see ByteBufOutputStream
  */
 public class ByteBufInputStream extends InputStream implements DataInput {

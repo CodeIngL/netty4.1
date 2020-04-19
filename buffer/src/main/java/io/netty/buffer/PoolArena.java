@@ -974,6 +974,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
             if (directMemoryCacheAlignment == 0) {
                 return new PoolChunk<ByteBuffer>(this, allocateDirect(chunkSize), pageSize, maxOrder, pageShifts, chunkSize, 0);
             }
+            //后面需要加上填充的部分，如果有的话
             final ByteBuffer memory = allocateDirect(chunkSize + directMemoryCacheAlignment);
             return new PoolChunk<ByteBuffer>(this, memory, pageSize, maxOrder, pageShifts, chunkSize, offsetCacheLine(memory));
         }

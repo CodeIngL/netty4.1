@@ -64,7 +64,7 @@ public abstract class AbstractByteBuf extends ByteBuf {
             logger.debug("-D{}: {}", PROP_CHECK_BOUNDS, checkBounds);
         }
     }
-
+    //全局唯一的追踪检测器，用于追踪检测ByteBuf的泄漏
     static final ResourceLeakDetector<ByteBuf> leakDetector =
             ResourceLeakDetectorFactory.instance().newResourceLeakDetector(ByteBuf.class);
 
