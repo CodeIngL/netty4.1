@@ -161,6 +161,19 @@ import java.util.concurrent.TimeUnit;
  *     // Connection established successfully
  * }
  * </pre>
+ *
+ * <p>
+ *     异步通道I/O操作的结果。
+ * </p>
+ * <p>
+ * Netty中的所有I/O操作都是异步的。 这意味着任何I / O调用都将立即返回，而不能保证所请求的I / O操作已在调用结束时完成。 相反，将返回一个ChannelFuture实例，该实例为您提供有关I / O操作的结果或状态的信息。
+ * </p>
+ * <p>
+ * ChannelFuture未完成或已完成。 I / O操作开始时，将创建一个新的将来对象。 新的future最初并未完成-因为I / O操作尚未完成，所以既不会成功，失败也不会取消。 如果I / O操作成功完成，失败或通过取消完成，则将来标记为已完成，并带有更多特定信息，例如失败原因。 请注意，即使失败和取消也属于完成状态。
+ * </p>
+ * <p></p>
+ * <p></p>
+ * <p></p>
  */
 public interface ChannelFuture extends Future<Void> {
 

@@ -42,6 +42,20 @@ import java.io.Serializable;
  * <li>{@code io.netty.processId} - an integer between 0 and 65535</li>
  * </ul>
  * </p>
+ * <p>
+ *     表示频道的全局唯一标识符。
+ * 标识符是从以下列出的各种来源生成的：
+ * MAC地址（EUI-48或EUI-64）或网络适配器，最好是全局唯一的，
+ * 当前的进程ID，
+ * System.currentTimeMillis（），
+ * System.nanoTime（），
+ * 一个随机的32位整数，以及
+ * 顺序递增的32位整数。
+ * 生成的标识符的全局唯一性主要取决于MAC地址和当前进程ID，它们是在类加载时以尽力而为的方式自动检测到的。 如果所有尝试获取它们的尝试均失败，则会记录一条警告消息，并使用随机值代替。 另外，您可以通过系统属性手动指定它们：
+ * </p>
+ * <p></p>
+ * <p></p>
+ *
  */
 public interface ChannelId extends Serializable, Comparable<ChannelId> {
     /**

@@ -39,6 +39,8 @@ import java.util.concurrent.RejectedExecutionException;
 
 /**
  * A skeletal {@link Channel} implementation.
+ *
+ * Channel的骨架实现
  */
 public abstract class AbstractChannel extends DefaultAttributeMap implements Channel {
 
@@ -64,8 +66,11 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     private final VoidChannelPromise unsafeVoidPromise = new VoidChannelPromise(this, false);
     private final CloseFuture closeFuture = new CloseFuture(this);
 
+    //本地地址
     private volatile SocketAddress localAddress;
+    //远程地址
     private volatile SocketAddress remoteAddress;
+    //事件循环
     private volatile EventLoop eventLoop;
     //是否已经注册
     private volatile boolean registered;
@@ -900,7 +905,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         }
 
         /**
-         * 写操作,channel写出消息
+         * 写操作,channel写出消息，这里的write将消息写入ChannelOutboundBuffer中
          * @param msg
          * @param promise
          */
@@ -924,6 +929,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 return;
             }
 
+            //记录大小
             int size;
             try {
                 msg = filterOutboundMessage(msg);

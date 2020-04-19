@@ -163,6 +163,9 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     /**
      * Get how many bytes can be written until {@link #isWritable()} returns {@code false}.
      * This quantity will always be non-negative. If {@link #isWritable()} is {@code false} then 0.
+     * <p>
+     *     获取直到{@link #isWritable()}返回{@code false}为止可以写入的字节数。 此数量将始终为非负数。 如果isWritable（）为false，则为0
+     * </p>
      */
     long bytesBeforeUnwritable();
 

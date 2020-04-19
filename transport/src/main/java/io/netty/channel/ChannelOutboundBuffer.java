@@ -50,7 +50,7 @@ import static java.lang.Math.min;
  * </p>
  *
  * <p>
- * （仅限传输实现程序）{@link AbstractChannel} 用于存储其挂起的outbound写入请求的内部数据结构。
+ * （仅限Transport实现程序）{@link AbstractChannel} 用于存储其挂起的outbound写入请求的内部数据结构。
  * <p>
  * 所有方法都必须由I/O线程的传输实现调用，但以下方法除外：
  * <ul>
@@ -661,6 +661,10 @@ public final class ChannelOutboundBuffer {
         return 1 << index;
     }
 
+    /**
+     * 设置是否可以写
+     * @param invokeLater
+     */
     private void setWritable(boolean invokeLater) {
         for (; ; ) {
             final int oldValue = unwritable;
