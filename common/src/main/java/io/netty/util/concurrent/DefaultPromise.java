@@ -546,7 +546,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void notifyListener0(Future future, GenericFutureListener l) {
         try {
-            //执行回调
+            //执行回调告知监听器处理完毕
             l.operationComplete(future);
         } catch (Throwable t) {
             if (logger.isWarnEnabled()) {

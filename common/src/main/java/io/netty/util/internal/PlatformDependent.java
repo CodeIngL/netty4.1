@@ -138,6 +138,9 @@ public final class PlatformDependent {
         // * == 0  - Use cleaner, Netty will not enforce max memory, and instead will defer to JDK.
         // * >  0  - Don't use cleaner. This will limit Netty's total direct memory
         //           (note: that JDK's direct memory limit is independent of this).
+        // * < 0     - 不使用cleaner，而是从Java继承最大直接内存。 在这种情况下，“实际最大直接内存”将是JDK定义的2 *最大内存。
+        // * == 0    - 使用cleaner,Netty不会强制使用最大内存，而是会遵循JDK。
+        // * > 0    - 不使用cleaner。 这将限制Netty的总直接内存（请注意：JDK的直接内存限制与此无关）。
         long maxDirectMemory = SystemPropertyUtil.getLong("io.netty.maxDirectMemory", -1);
 
         if (maxDirectMemory == 0 || !hasUnsafe() || !PlatformDependent0.hasDirectBufferNoCleanerConstructor()) {
@@ -1011,6 +1014,10 @@ public final class PlatformDependent {
         return vmName.equals("IKVM.NET");
     }
 
+    /**
+     * 获得jdk中的最大内存
+     * @return
+     */
     private static long maxDirectMemory0() {
         long maxDirectMemory = 0;
 

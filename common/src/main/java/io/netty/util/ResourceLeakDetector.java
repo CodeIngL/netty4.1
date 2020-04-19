@@ -40,7 +40,7 @@ import static io.netty.util.internal.StringUtil.NEWLINE;
 import static io.netty.util.internal.StringUtil.simpleClassName;
 
 /**
- * 资源泄漏检测
+ * 资源泄漏检测，通常是全局唯一的进行处理
  * @param <T>
  */
 public class ResourceLeakDetector<T> {
@@ -180,6 +180,8 @@ public class ResourceLeakDetector<T> {
 
     /**
      * the collection of active resources
+     *
+     * 手机存活着的引用，如果一个对象应该而被释放，他应该从活跃的这个结构中删除其对应的弱引用
      */
     private final Set<DefaultResourceLeak<?>> allLeaks =
             Collections.newSetFromMap(new ConcurrentHashMap<DefaultResourceLeak<?>, Boolean>());
@@ -271,6 +273,7 @@ public class ResourceLeakDetector<T> {
      */
     @SuppressWarnings("unchecked")
     public final ResourceLeakTracker<T> track(T obj) {
+
         return track0(obj);
     }
 
@@ -408,6 +411,7 @@ public class ResourceLeakDetector<T> {
                 ReferenceQueue<Object> refQueue,
                 Set<DefaultResourceLeak<?>> allLeaks) {
             //WeakReference创建一个引用给定对象并在给定队列中注册的新弱引用。
+            //当referent被回收的时候，其的弱引用会也就是这里this被回收到refQueue中
             super(referent, refQueue);
 
             assert referent != null;
@@ -664,13 +668,19 @@ public class ResourceLeakDetector<T> {
         } while (!excludedMethods.compareAndSet(oldMethods, newMethods));
     }
 
+    /**
+     * 记录堆栈的信息
+     */
     private static final class Record extends Throwable {
         private static final long serialVersionUID = 6065153674892850720L;
 
         private static final Record BOTTOM = new Record();
 
+        //相关的提示的信息
         private final String hintString;
+        //下一个的记录者
         private final Record next;
+        //记录的位置
         private final int pos;
 
         Record(Record next, Object hint) {
