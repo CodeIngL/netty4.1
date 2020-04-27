@@ -72,7 +72,9 @@ public abstract class AbstractByteBuf extends ByteBuf {
     int readerIndex;
     //写标记
     int writerIndex;
+    //读标记
     private int markedReaderIndex;
+    //写标记
     private int markedWriterIndex;
     //设定的最大容量
     private int maxCapacity;

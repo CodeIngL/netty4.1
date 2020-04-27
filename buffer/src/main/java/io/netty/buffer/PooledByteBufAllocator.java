@@ -213,7 +213,8 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
     private final List<PoolArenaMetric> directArenaMetrics;
     //特殊的ThreadLocal
     private final PoolThreadLocalCache threadCache;
-    private final int chunkSize; //默认8192*2^11（16M），内存块大小
+    //默认8192*2^11（16M），内存块大小
+    private final int chunkSize;
     //分配统计信息
     private final PooledByteBufAllocatorMetric metric;
 
@@ -577,7 +578,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
                         DEFAULT_MAX_CACHED_BUFFER_CAPACITY, DEFAULT_CACHE_TRIM_INTERVAL);
 
                 //创建任务
-                if (DEFAULT_CACHE_TRIM_INTERVAL_MILLIS > 0) { //如果需要修剪，我们定时的调度去修剪缓存
+                if (DEFAULT_CACHE_TRIM_INTERVAL_MILLIS > 0) { //如果需要修剪，我们定时的调度去修剪缓存，默认的修剪时间是0
                     final EventExecutor executor = ThreadExecutorMap.currentExecutor();
                     if (executor != null) {
                         executor.scheduleAtFixedRate(trimTask, DEFAULT_CACHE_TRIM_INTERVAL_MILLIS, DEFAULT_CACHE_TRIM_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);

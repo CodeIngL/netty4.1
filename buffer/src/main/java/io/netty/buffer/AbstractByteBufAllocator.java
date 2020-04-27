@@ -238,7 +238,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         if (initialCapacity == 0 && maxCapacity == 0) {
             return emptyBuf;
         }
-        //校验
+        //校验参数合法性
         validate(initialCapacity, maxCapacity);
         //分配直接内存
         return newDirectBuffer(initialCapacity, maxCapacity);

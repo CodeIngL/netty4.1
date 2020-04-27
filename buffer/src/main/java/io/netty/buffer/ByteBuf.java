@@ -2339,6 +2339,13 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Please note that the returned NIO buffer will not see the changes of this buffer if this buffer
      * is a dynamic buffer and it adjusted its capacity.
      *
+     * <p>
+     *     将此缓冲区的可读字节公开为NIO ByteBuffer。
+     *     返回的缓冲区共享或包含此缓冲区的复制内容，而更改返回的NIO缓冲区的位置和限制不会影响此缓冲区的索引和标记。
+     *     此方法不会修改此缓冲区的readerIndex或writerIndex。
+     *     请注意，如果返回的NIO缓冲区是动态缓冲区并且已调整其容量，则返回的NIO缓冲区将看不到该缓冲区的更改。
+     * </p>
+     *
      * @throws UnsupportedOperationException if this buffer cannot create a {@link ByteBuffer} that shares the content with itself
      * @see #nioBufferCount()
      * @see #nioBuffer()
