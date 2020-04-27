@@ -352,6 +352,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
      */
     @Override
     protected int doReadBytes(ByteBuf byteBuf) throws Exception {
+        //获得分配处理器
         final RecvByteBufAllocator.Handle allocHandle = unsafe().recvBufAllocHandle();
         //标记一下可以读的容量
         allocHandle.attemptedBytesRead(byteBuf.writableBytes());
@@ -419,6 +420,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
 
             // Always us nioBuffers() to workaround data-corruption.
             // See https://github.com/netty/netty/issues/2761
+            // 始终使用nioBuffers()解决数据损坏。
             switch (nioBufferCnt) {
                 case 0:
                     // We have something else beside ByteBuffers to write so fallback to normal writes.

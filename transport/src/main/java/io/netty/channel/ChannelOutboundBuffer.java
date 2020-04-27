@@ -79,6 +79,10 @@ public final class ChannelOutboundBuffer {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ChannelOutboundBuffer.class);
 
+    /**
+     * nio_buffer
+     * 对象池来实现减小的分配
+     */
     private static final FastThreadLocal<ByteBuffer[]> NIO_BUFFERS = new FastThreadLocal<ByteBuffer[]>() {
         @Override
         protected ByteBuffer[] initialValue() throws Exception {
@@ -557,6 +561,13 @@ public final class ChannelOutboundBuffer {
         return nioBufferCount;
     }
 
+    /**
+     * 对buffer数组进行扩容
+     * @param array
+     * @param neededSpace
+     * @param size
+     * @return
+     */
     private static ByteBuffer[] expandNioBufferArray(ByteBuffer[] array, int neededSpace, int size) {
         int newCapacity = array.length;
         do {

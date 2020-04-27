@@ -29,6 +29,7 @@ import io.netty.util.UncheckedBooleanSupplier;
  * </p>
  */
 public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessagesRecvByteBufAllocator {
+    //每次读取消息的最大数量
     private volatile int maxMessagesPerRead;
     private volatile boolean respectMaybeMoreData = true;
 

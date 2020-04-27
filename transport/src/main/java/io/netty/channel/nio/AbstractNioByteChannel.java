@@ -193,10 +193,12 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 //触发读完成事件
                 pipeline.fireChannelReadComplete();
 
+                //关闭，触发关闭的事件
                 if (close) {
                     closeOnRead(pipeline);
                 }
             } catch (Throwable t) {
+                //异常触发异常的事件
                 handleReadException(pipeline, byteBuf, t, close, allocHandle);
             } finally {
                 // Check if there is a readPending which was not processed yet.

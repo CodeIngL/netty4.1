@@ -210,6 +210,9 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
         /**
          * Read from underlying {@link SelectableChannel}
+         * <p>
+         *     从底层SelectableChannel读取
+         * </p>
          */
         void read();
 
@@ -223,6 +226,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             // Check first if the key is still valid as it may be canceled as part of the deregistration
             // from the EventLoop
             // See https://github.com/netty/netty/issues/2104
+            // 首先检查密钥是否仍然有效，因为它可能会从EventLoop中注销，因此可能会被取消
             if (!key.isValid()) {
                 return;
             }
