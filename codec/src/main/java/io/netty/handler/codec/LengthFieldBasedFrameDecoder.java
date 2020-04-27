@@ -332,12 +332,16 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
 
     private final ByteOrder byteOrder;
     private final int maxFrameLength;
+    //长度字段的偏移位置
     private final int lengthFieldOffset;
+    //长度字段的
     private final int lengthFieldLength;
+    //长度字段的结束位置
     private final int lengthFieldEndOffset;
     private final int lengthAdjustment;
     private final int initialBytesToStrip;
     private final boolean failFast;
+    //是否丢弃
     private boolean discardingTooLongFrame;
     private long tooLongFrameLength;
     private long bytesToDiscard;
@@ -577,6 +581,13 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      * capable of decoding the specified region into an unsigned 8/16/24/32/64 bit integer.  Override this method to
      * decode the length field encoded differently.  Note that this method must not modify the state of the specified
      * buffer (e.g. {@code readerIndex}, {@code writerIndex}, and the content of the buffer.)
+     *
+     * <p>
+     *     将缓冲区的指定区域解码为未经调整的帧长。
+     *     默认实现能够将指定区域解码为无符号的8/16/24/32/64位整数。
+     *     重写此方法可解码以不同方式编码的长度字段。
+     *     请注意，此方法不得修改指定缓冲区的状态（例如readerIndex，writerIndex和缓冲区的内容）。
+     * </p>
      *
      * @throws DecoderException if failed to decode the specified region
      */

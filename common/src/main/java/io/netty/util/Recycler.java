@@ -52,7 +52,7 @@ public abstract class Recycler<T> {
     private static final AtomicInteger ID_GENERATOR = new AtomicInteger(Integer.MIN_VALUE); // 线程安全的自增计数器,用来做唯一标记的.
     private static final int OWN_THREAD_ID = ID_GENERATOR.getAndIncrement(); //static变量, 生成并获取一个唯一id, 标记当前的线程
     private static final int DEFAULT_INITIAL_MAX_CAPACITY_PER_THREAD = 4 * 1024; // Use 4k instances as default.
-    private static final int DEFAULT_MAX_CAPACITY_PER_THREAD; // 每个线程的Stack最多缓存多少个对象
+    private static final int DEFAULT_MAX_CAPACITY_PER_THREAD; // 每个线程的Stack最多缓存多少个对象，默认4096个对象
     private static final int INITIAL_CAPACITY; // 初始化容量
     private static final int MAX_SHARED_CAPACITY_FACTOR; // 最大可共享的容量
     private static final int MAX_DELAYED_QUEUES_PER_THREAD; // WeakOrderQueue最大数量
@@ -64,8 +64,7 @@ public abstract class Recycler<T> {
         // e.g. io.netty.recycler.maxCapacity.writeTask
         //      io.netty.recycler.maxCapacity.outboundBuffer
         // 将来，我们可能会针对不同的对象类型使用不同的maxCapacity。
-        // 例如: io.netty.recycler.maxCapacity.writeTask
-        //    io.netty.recycler.maxCapacity.outboundBuffer
+        // 例如: io.netty.recycler.maxCapacity.writeTask     io.netty.recycler.maxCapacity.outboundBuffer
         int maxCapacityPerThread = SystemPropertyUtil.getInt("io.netty.recycler.maxCapacityPerThread",
                 SystemPropertyUtil.getInt("io.netty.recycler.maxCapacity", DEFAULT_INITIAL_MAX_CAPACITY_PER_THREAD));
         if (maxCapacityPerThread < 0) {

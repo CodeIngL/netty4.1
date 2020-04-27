@@ -75,6 +75,27 @@ import static io.netty.util.internal.StringUtil.simpleClassName;
  * and Hierarchical Timing Wheels: data structures to efficiently implement a
  * timer facility'</a>.  More comprehensive slides are located
  * <a href="http://www.cse.wustl.edu/~cdgill/courses/cs6874/TimingWheels.ppt">here</a>.
+ * <p>
+ *     一个为近似I / O超时调度而优化的计时器。
+ *
+ </p>
+ * <p>
+ *     滴答持续时间
+ * </p>
+ * <p>
+ * 如“近似”所述，此计时器不会按时执行计划的TimerTask。 HashedWheelTimer在每个刻度上都会检查时间表后是否有任何TimerTasks并执行它们。
+ * </p>
+ * <p>
+ * 您可以通过在构造函数中指定较小或较大的滴答持续时间来提高或降低执行定时的准确性。在大多数网络应用程序中，I / O超时不需要准确。因此，默认的滴答持续时间为100毫秒，在大多数情况下，您无需尝试其他配置。
+ * </p>
+ * <p>
+ * 每轮头（车轮尺寸）
+ * HashedWheelTimer维护一个称为“ wheel”的数据结构。简而言之，转轮是TimerTasks的哈希表，其哈希函数为“任务的虚线”。每个轮子的默认刻度数（即轮子的大小）为512。如果您要安排很多超时，则可以指定一个较大的值。
+ * 不要创建很多实例。
+ * HashedWheelTimer每当实例化并启动时都会创建一个新线程。因此，您应确保仅创建一个实例并在您的应用程序中共享它。使您的应用程序无响应的常见错误之一是为每个连接创建一个新实例。
+ * 实施细节
+ * HashedWheelTimer基于George Varghese和Tony Lauck的论文“ Hashed and Hierarchical Timing Wheels：有效执行计时器功能的数据结构”。更全面的幻灯片位于此处。
+ * </p>
  */
 public class HashedWheelTimer implements Timer {
 

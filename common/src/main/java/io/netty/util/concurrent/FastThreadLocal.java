@@ -55,6 +55,7 @@ import java.util.Set;
  */
 public class FastThreadLocal<V> {
 
+    //下一个位置
     private static final int variablesToRemoveIndex = InternalThreadLocalMap.nextVariableIndex();
 
     /**
