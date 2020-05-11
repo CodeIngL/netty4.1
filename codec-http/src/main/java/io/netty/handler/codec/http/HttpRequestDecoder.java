@@ -51,6 +51,30 @@ import io.netty.handler.codec.TooLongFrameException;
  *     after this decoder in the {@link ChannelPipeline}.</td>
  * </tr>
  * </table>
+ *
+ * <p>
+ *     将ByteBufs解码为HttpRequests和HttpContents。
+ * </p>
+ * <h3>防止过度消耗内存的参数</h3>
+ * <table border="1">
+ * <tr>
+ * <th>名称</th><th>含义</th>
+ * </tr>
+ * <tr>
+ * <td>{@code maxInitialLineLength}</td>
+ * <td>首行的最大长度（例如“ GET / HTTP / 1.0”）。如果首行的长度超过此值，则会引发TooLongFrameException。</td>
+ * </tr>
+ * <tr>
+ * <td>maxHeaderSize</td>
+ * <td>所有标题的最大长度。 如果每个标头的长度总和超过此值，将引发TooLongFrameException。</td>
+ * </tr>
+ * <tr>
+ * <td>maxChunkSize</td>
+ * <td> 内容或每个块的最大长度。 如果内容长度超过此值，则解码请求的传输编码将转换为“块”，并且内容将拆分为多个HttpContent。
+ * 如果HTTP请求的传输编码已被“分块”，则如果块的长度超过此值，则每个块将被拆分为较小的块。
+ * 如果您不想在处理程序中处理HttpContent，请在此解码器之后在ChannelPipeline中插入HttpObjectAggregator。</td>
+ * </tr>
+ * </table>
  */
 public class HttpRequestDecoder extends HttpObjectDecoder {
 

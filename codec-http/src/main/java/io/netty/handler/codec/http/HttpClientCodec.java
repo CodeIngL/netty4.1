@@ -40,6 +40,13 @@ import java.util.concurrent.atomic.AtomicLong;
  * If the {@link Channel} is closed and there are missing responses,
  * a {@link PrematureChannelClosureException} is thrown.
  *
+ * <p>
+ *     HttpRequestEncoder和HttpResponseDecoder的组合，使客户端HTTP实现更加容易。 HttpClientCodec为HEAD和CONNECT请求提供了额外的状态管理，而HttpResponseDecoder缺少该状态管理。
+ *     请参考HttpResponseDecoder，以了解需要对HEAD和CONNECT进行哪些附加状态管理以及为什么HttpResponseDecoder无法自行处理。
+ * </p>
+ * <p>
+ *     如果关闭了Channel并且缺少响应，则抛出PrematureChannelClosureException。
+ * </p>
  * @see HttpServerCodec
  */
 public final class HttpClientCodec extends CombinedChannelDuplexHandler<HttpResponseDecoder, HttpRequestEncoder>

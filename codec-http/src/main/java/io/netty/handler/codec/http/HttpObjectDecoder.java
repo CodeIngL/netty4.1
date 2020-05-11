@@ -100,6 +100,56 @@ import java.util.List;
  * <a href="http://en.wikipedia.org/wiki/Internet_Content_Adaptation_Protocol">ICAP</a>.
  * To implement the decoder of such a derived protocol, extend this class and
  * implement all abstract methods properly.
+ *
+ * <p>
+ *     将ByteBufs解码为HttpMessages和HttpContents。
+ * </p>
+ * <h3>防止过度消耗内存的参数</h3>
+ * <table border="1">
+ * <tr>
+ * <th>名称</th><th>含义</th>
+ * </tr>
+ * <tr>
+ * <td>{@code maxInitialLineLength}</td>
+ * <td>初始行的最大长度（例如“ GET / HTTP / 1.0”或“ HTTP / 1.0 200 OK”）。如果初始行的长度超过此值，则会引发TooLongFrameException。</td>
+ * </tr>
+ * <tr>
+ * <td>{@code maxHeaderSize}</td>
+ * <td>所有标题的最大长度。如果每个标头的长度总和超过此值，将引发TooLongFrameException。</td>
+ * </tr>
+ * <tr>
+ * <td>{@code maxChunkSize}</td>
+ * <td>内容或每个块的最大长度。如果内容长度（或每个块的长度）超过此值，则内容或块将被拆分为多个HttpContent，其最大长度为maxChunkSize。</td>
+ * </tr>
+ * </table>
+ * <h3>分块内容</h3>
+ *
+ * 如果HTTP消息的内容大于maxChunkSize或HTTP消息的传输编码为“块式”，则此解码器会为每个HTTP消息生成一个HttpMessage实例及其后续HttpContent，以避免过多的内存消耗。例如，以下HTTP消息：
+ * <pre>
+ * GET / HTTP/1.1
+ * Transfer-Encoding: chunked
+ *
+ * 1a
+ * abcdefghijklmnopqrstuvwxyz
+ * 10
+ * 1234567890abcdef
+ * 0
+ * Content-MD5: ...
+ * <i>[blank line]</i>
+ * </pre>
+ * 触发HttpRequestDecoder生成3个对象：
+ * <ol>
+ * <li>An {@link HttpRequest},</li>
+ * <li>The first {@link HttpContent} whose content is {@code 'abcdefghijklmnopqrstuvwxyz'},</li>
+ * <li>The second {@link LastHttpContent} whose content is {@code '1234567890abcdef'}, which marks
+ * the end of the content.</li>
+ * </ol>
+ * <p>如果您不想为了自己的方便而自己处理HttpContents，请在此解码器之后在ChannelPipeline中插入HttpObjectAggregator。但是，请注意，服务器的内存效率可能不如没有聚合器那样高。</p>
+ * <h3>可扩展性</h3>
+ * <p>
+ * 请注意，此解码器旨在进行扩展以实现从HTTP派生的协议，例如RTSP和ICAP。要实现这种派生协议的解码器，请扩展此类并正确实现所有抽象方法
+ * </p>
+ * <p></p>
  */
 public abstract class HttpObjectDecoder extends ByteToMessageDecoder {
     private static final String EMPTY_VALUE = "";

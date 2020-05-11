@@ -59,6 +59,25 @@ import static io.netty.util.internal.StringUtil.*;
  * default, and you can configure it when you construct the decoder by passing an additional
  * integer parameter.
  *
+ * <p>
+ *     将HTTP查询字符串拆分为路径字符串和键值参数对。该解码器仅供一次使用。为每个URI创建一个新实例：
+ * </p>
+ * <pre>
+ * {@link QueryStringDecoder} decoder = new {@link QueryStringDecoder}("/hello?recipient=world&x=1;y=2");
+ * assert decoder.path().equals("/hello");
+ * assert decoder.parameters().get("recipient").get(0).equals("world");
+ * assert decoder.parameters().get("x").get(0).equals("1");
+ * assert decoder.parameters().get("y").get(0).equals("2");
+ * </pre>
+ * 该解码器还可以解码HTTP POST请求的内容，其内容类型为application / x-www-form-urlencoded：
+ * <pre>
+ * {@link QueryStringDecoder} decoder = new {@link QueryStringDecoder}("recipient=world&x=1;y=2", false);
+ * ...
+ * </pre>
+ *  <h3>HashDOS漏洞修复</h3>
+ *
+ * 作为HashDOS漏洞的一种解决方法，解码器限制了已解码键-值参数对的最大数量，默认情况下最多为1024，并且在构造解码器时可以通过传递附加的整数参数来对其进行配置。
+ * 也可以看看：
  * @see QueryStringEncoder
  */
 public class QueryStringDecoder {
