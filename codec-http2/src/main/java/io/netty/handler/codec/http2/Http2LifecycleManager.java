@@ -23,6 +23,9 @@ import io.netty.util.internal.UnstableApi;
 /**
  * Manager for the life cycle of the HTTP/2 connection. Handles graceful shutdown of the channel,
  * closing only after all of the streams have closed.
+ * <p>
+ *     HTTP/2连接生命周期的管理器。 处理通道的正常关闭，仅在所有流关闭后才关闭。
+ * </p>
  */
 @UnstableApi
 public interface Http2LifecycleManager {

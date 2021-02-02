@@ -64,6 +64,7 @@ import static java.lang.Integer.MAX_VALUE;
 public class DefaultHttp2Connection implements Http2Connection {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(DefaultHttp2Connection.class);
     // Fields accessed by inner classes
+    // 内部类访问的字段
     final IntObjectMap<Http2Stream> streamMap = new IntObjectHashMap<Http2Stream>();
     final PropertyKeyRegistry propertyKeyRegistry = new PropertyKeyRegistry();
     final ConnectionStream connectionStream = new ConnectionStream();
@@ -378,6 +379,9 @@ public class DefaultHttp2Connection implements Http2Connection {
 
     /**
      * Simple stream implementation. Streams can be compared to each other by priority.
+     * <p>
+     *     简单的流实现。 流可以按优先级相互比较。
+     * </p>
      */
     private class DefaultStream implements Http2Stream {
         private static final byte META_STATE_SENT_RST = 1;

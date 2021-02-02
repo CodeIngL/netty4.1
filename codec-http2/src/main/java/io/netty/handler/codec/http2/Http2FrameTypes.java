@@ -19,6 +19,7 @@ import io.netty.util.internal.UnstableApi;
 
 /**
  * Registry of all standard frame types defined by the HTTP/2 specification.
+ * HTTP/2规范定义的所有标准帧类型的注册表。
  */
 @UnstableApi
 public final class Http2FrameTypes {

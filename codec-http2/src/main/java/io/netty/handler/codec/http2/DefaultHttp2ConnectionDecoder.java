@@ -46,6 +46,15 @@ import static java.lang.Math.min;
  * <p>
  * This interface enforces inbound flow control functionality through
  * {@link Http2LocalFlowController}
+ * <p>
+ *     提供用于处理入站帧事件并委托给Http2FrameListener的默认实现
+ * </p>
+ * <p>
+ *    此类将读取HTTP/2帧并将事件委托给Http2FrameListener
+ * </p>
+ * <p>
+ *    此接口通过{@link Http2LocalFlowController}强制执行入站流控制功能
+ * </p>
  */
 @UnstableApi
 public class DefaultHttp2ConnectionDecoder implements Http2ConnectionDecoder {
@@ -169,6 +178,9 @@ public class DefaultHttp2ConnectionDecoder implements Http2ConnectionDecoder {
 
     /**
      * Handles all inbound frames from the network.
+     * <p>
+     *     处理来自网络的所有入站帧。
+     * </p>
      */
     private final class FrameReadListener implements Http2FrameListener {
         @Override

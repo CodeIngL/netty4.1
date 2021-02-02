@@ -102,6 +102,40 @@ import static java.lang.Math.min;
  * does not know about the connection-level flow control window. {@link ChannelHandler}s are free to ignore the
  * channel's writability, in which case the excessive writes will be buffered by the parent channel. It's important to
  * note that only {@link Http2DataFrame}s are subject to HTTP/2 flow control.
+ *
+ * <p>
+ *     一个HTTP / 2处理程序，为每个流创建子通道。
+ * </p>
+ * <p>
+ * 创建新的流后，将为其创建一个新的Channel。应用程序在创建的通道上发送和接收Http2StreamFrames。 ByteBufs不能被通道处理；到达管道头的所有写操作都必须是Http2StreamFrame的实例。此处理程序直接处理到达管道开头的写入，并且无法拦截。
+ * </p>
+ * <p>
+ * 子通道将在发生时立即收到影响流的用户事件的通知，例如Http2GoAwayFrame和Http2ResetFrame。尽管Http2GoAwayFrame和Http2ResetFrame表示远程服务器正在忽略进一步的通信，但是通道的关闭会延迟到用Channel.read（）耗尽所有入站队列为止，这遵循Netty中通道的默认行为。如果应用程序没有使用任何排队的消息，则可以自由关闭通道以响应此类事件。任何连接级别的事件（例如Http2SettingsFrame和Http2GoAwayFrame）都将在内部进行处理，并在管道中向下传播，以供其他处理程序执行。
+ * </p>
+ * <p>
+ * 通过Http2StreamChannelBootstrap支持出站流。
+ * </p>
+ * <p>
+ * 支持ChannelConfig.setMaxMessagesPerRead（int）和ChannelConfig.setAutoRead（boolean）。
+ * </p>
+ * <p>
+ * 参考计数
+ * </p>
+ * <p>
+ * 一些Http2StreamFrames实现了ReferenceCounted接口，因为它们带有引用计数对象（例如ByteBufs）。复用编解码器将在通过管道传播引用计数的对象之前调用ReferenceCounted.retain（），因此应用程序处理程序需要在消耗完该对象后释放该对象。有关引用计数的更多信息，请访问http://netty.io/wiki/reference-counted-objects.html
+ * </p>
+ * <p>
+ * 频道活动
+ * </p>
+ * <p>
+ * 子频道一旦注册到EventLoop，就会变为活动状态。因此，活动通道不会立即映射到活动HTTP / 2流。仅在成功发送或接收Http2HeadersFrame之后，通道才会映射到活动的HTTP / 2流。如果无法打开新的HTTP / 2流（即，由于超出了活动流的最大数量），则子通道会收到指示原因的异常，并在此后立即关闭。
+ * </p>
+ * <p>
+ * 可写性和流程控制
+ * </p>
+ * <p>
+ * 子通道通过通道的可写性观察出站/远程流控制。仅当通道映射到活动的HTTP / 2流且该流的流控制窗口大于零时，该通道才可写。子通道不知道连接级别的流量控制窗口。 ChannelHandlers可以随意忽略通道的可写性，在这种情况下，过多的写入将由父通道缓冲。重要的是要注意，只有Http2DataFrames受到HTTP / 2流控制。
+ * </p>
  */
 @UnstableApi
 public class Http2MultiplexCodec extends Http2FrameCodec {

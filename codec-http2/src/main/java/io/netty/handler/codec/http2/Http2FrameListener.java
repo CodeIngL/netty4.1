@@ -31,7 +31,7 @@ public interface Http2FrameListener {
      * @param streamId the subject stream for the frame.
      * @param data payload buffer for the frame. This buffer will be released by the codec.
      * @param padding additional bytes that should be added to obscure the true content size. Must be between 0 and
-     *                256 (inclusive).
+     *                256 (inclusive).应该添加的其他字节以掩盖真实内容的大小。 必须介于0到256（含）之间。
      * @param endOfStream Indicates whether this is the last frame to be sent from the remote endpoint for this stream.
      * @return the number of bytes that have been processed by the application. The returned bytes are used by the
      * inbound flow controller to determine the appropriate time to expand the inbound flow control window (i.e. send

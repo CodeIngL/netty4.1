@@ -68,6 +68,9 @@ import static java.lang.Math.min;
 
 /**
  * A {@link Http2FrameWriter} that supports all frame types defined by the HTTP/2 specification.
+ * <p>
+ *     {@link Http2FrameWriter}支持HTTP/2规范定义的所有帧类型。
+ * </p>
  */
 @UnstableApi
 public class DefaultHttp2FrameWriter implements Http2FrameWriter, Http2FrameSizePolicy, Configuration {

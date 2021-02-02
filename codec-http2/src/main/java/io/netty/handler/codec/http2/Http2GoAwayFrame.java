@@ -28,6 +28,15 @@ import io.netty.util.internal.UnstableApi;
  *
  * <p>Graceful shutdown as described in the HTTP/2 spec can be accomplished by calling
  * {@code #setExtraStreamIds(Integer.MAX_VALUE)}.
+ * <p>
+ * HTTP/2 GOAWAY frame
+ * </p>
+ * <p>
+ * 应用程序不得设置最后一个流标识符，而应使用相对的extraStreamIds()。 仅通过HTTP/2编解码器为传入的GOAWAY帧设置lastStreamId()。
+ * </p>
+ * <p>
+ * 可以通过调用#setExtraStreamIds(Integer.MAX_VALUE)来实现HTTP / 2规范中所述的正常关机。
+ * </p>
  */
 @UnstableApi
 public interface Http2GoAwayFrame extends Http2Frame, ByteBufHolder {
@@ -46,8 +55,8 @@ public interface Http2GoAwayFrame extends Http2Frame, ByteBufHolder {
     /**
      * Sets the number of IDs to reserve for the receiver to use while GOAWAY is in transit.
      *
-     * @see #extraStreamIds
      * @return {@code this}
+     * @see #extraStreamIds
      */
     Http2GoAwayFrame setExtraStreamIds(int extraStreamIds);
 

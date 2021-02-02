@@ -27,6 +27,11 @@ import java.io.Closeable;
  * A writer responsible for marshaling HTTP/2 frames to the channel. All of the write methods in
  * this interface write to the context, but DO NOT FLUSH. To perform a flush, you must separately
  * call {@link ChannelHandlerContext#flush()}.
+ * <p>
+ *     一个负责将HTTP/2帧编组到通道的编写器。
+ *     此接口中的所有写方法均会写入上下文，但不要刷新。
+ *     要执行刷新，必须单独调用ChannelHandlerContext.flush()。
+ * </p>
  */
 @UnstableApi
 public interface Http2FrameWriter extends Http2DataWriter, Closeable {

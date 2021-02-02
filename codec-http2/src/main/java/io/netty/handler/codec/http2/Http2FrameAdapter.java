@@ -20,6 +20,9 @@ import io.netty.util.internal.UnstableApi;
 
 /**
  * Convenience class that provides no-op implementations for all methods of {@link Http2FrameListener}.
+ * <p>
+ *     便捷类，为{@link Http2FrameListener}的所有方法提供无操作实现。
+ * </p>
  */
 @UnstableApi
 public class Http2FrameAdapter implements Http2FrameListener {

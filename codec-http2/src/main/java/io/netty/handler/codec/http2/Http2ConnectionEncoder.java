@@ -55,6 +55,9 @@ public interface Http2ConnectionEncoder extends Http2FrameWriter {
 
     /**
      * Sets the settings for the remote endpoint of the HTTP/2 connection.
+     * <p>
+     *     设置HTTP/2连接的远程端点的设置。
+     * </p>
      */
     void remoteSettings(Http2Settings settings) throws Http2Exception;
 

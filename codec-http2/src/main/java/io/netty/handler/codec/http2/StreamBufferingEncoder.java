@@ -54,6 +54,21 @@ import static io.netty.handler.codec.http2.Http2Exception.connectionError;
  * <p>This implementation makes the buffering mostly transparent and is expected to be used as a
  * drop-in decorator of {@link DefaultHttp2ConnectionEncoder}.
  * </p>
+ * <p>
+ *     Http2ConnectionEncoder的实现，该过程将所有方法调用分派到另一个Http2ConnectionEncoder，直到达到SETTINGS_MAX_CONCURRENT_STREAMS。
+ * </p>
+ * <p>
+ * 当达到此限制时，此实现将缓冲新创建的流及其对应的帧，而不是拒绝任何新的流。 一旦活动流关闭或并发流的最大数量增加，此编码器将自动尝试清空其缓冲区并创建尽可能多的新流。
+ * </p>
+ * <p>
+ * 如果从远程端点接收到GOAWAY帧，则ID小于指定的lastStreamId的流的所有缓冲写操作都将立即失败，并出现StreamBufferingEncoder.Http2GoAwayException。
+ * </p>
+ * <p>
+ * 如果通道/编码器被关闭，则所有新的和缓冲的写入将立即失败，并出现StreamBufferingEncoder.Http2ChannelClosedException。
+ * </p>
+ * <p>
+ * 此实现使缓冲几乎是透明的，并有望用作DefaultHttp2ConnectionEncoder的嵌入式装饰器。
+ * </p>
  */
 @UnstableApi
 public class StreamBufferingEncoder extends DecoratingHttp2ConnectionEncoder {

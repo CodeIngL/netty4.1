@@ -22,6 +22,9 @@ import io.netty.util.internal.UnstableApi;
 
 /**
  * Manager for the state of an HTTP/2 connection with the remote end-point.
+ * <p>
+ *     与远程端点的HTTP/2连接状态的管理器。
+ * </p>
  */
 @UnstableApi
 public interface Http2Connection {

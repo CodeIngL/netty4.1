@@ -61,6 +61,17 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * <p>
  * This interface enforces inbound flow control functionality through
  * {@link Http2LocalFlowController}
+ * <p>
+ * </p>
+ * <p>
+ * 提供用于处理入站帧事件并委托给Http2FrameListener的默认实现
+ * </p>
+ * <p>
+ * 此类将读取HTTP/2帧并将事件委托给Http2FrameListener
+ * </p>
+ * <p>
+ * 此接口通过Http2LocalFlowController强制执行入站流控制功能
+ * </p>
  */
 @UnstableApi
 public class Http2ConnectionHandler extends ByteToMessageDecoder implements Http2LifecycleManager,
@@ -77,6 +88,7 @@ public class Http2ConnectionHandler extends ByteToMessageDecoder implements Http
     private final Http2ConnectionEncoder encoder;
     private final Http2Settings initialSettings;
     private ChannelFutureListener closeListener;
+    //基本的解码器
     private BaseDecoder byteDecoder;
     private long gracefulShutdownTimeoutMillis;
 
@@ -229,6 +241,9 @@ public class Http2ConnectionHandler extends ByteToMessageDecoder implements Http
         }
     }
 
+    /**
+     * 前言decode
+     */
     private final class PrefaceDecoder extends BaseDecoder {
         private ByteBuf clientPrefaceString;
         private boolean prefaceSent;
@@ -250,6 +265,7 @@ public class Http2ConnectionHandler extends ByteToMessageDecoder implements Http
             try {
                 if (ctx.channel().isActive() && readClientPrefaceString(in) && verifyFirstFrameIsSettings(in)) {
                     // After the preface is read, it is time to hand over control to the post initialized decoder.
+                    // 读完序言之后，该将控制权移交给后初始化的解码器了。
                     byteDecoder = new FrameDecoder();
                     byteDecoder.decode(ctx, in, out);
                 }
@@ -383,10 +399,14 @@ public class Http2ConnectionHandler extends ByteToMessageDecoder implements Http
         }
     }
 
+    /**
+     * 帧decode
+     */
     private final class FrameDecoder extends BaseDecoder {
         @Override
         public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
             try {
+                //解码帧
                 decoder.decodeFrame(ctx, in, out);
             } catch (Throwable e) {
                 onError(ctx, false, e);

@@ -39,6 +39,9 @@ import io.netty.util.ReferenceCountUtil;
 /**
  * Sets up the Netty pipeline for the example server. Depending on the endpoint config, sets up the
  * pipeline for NPN or cleartext HTTP upgrade to HTTP/2.
+ * <p>
+ *     为示例服务器设置Netty管道。 根据端点配置，为NPN或明文HTTP升级到HTTP/2设置管道
+ * </p>
  */
 public class Http2ServerInitializer extends ChannelInitializer<SocketChannel> {
 

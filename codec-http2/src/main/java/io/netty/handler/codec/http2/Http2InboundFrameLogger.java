@@ -24,6 +24,9 @@ import io.netty.util.internal.UnstableApi;
 /**
  * Decorator around a {@link Http2FrameReader} that logs all inbound frames before calling
  * back the listener.
+ * <p>
+ *     {@link Http2FrameReader} 装饰器，该装饰器在回调侦听器之前记录所有入站帧。
+ * </p>
  */
 @UnstableApi
 public class Http2InboundFrameLogger implements Http2FrameReader {

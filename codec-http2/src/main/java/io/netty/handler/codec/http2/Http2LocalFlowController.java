@@ -19,6 +19,9 @@ import io.netty.util.internal.UnstableApi;
 
 /**
  * A {@link Http2FlowController} for controlling the inbound flow of {@code DATA} frames from the remote endpoint.
+ * <p>
+ *     一个{@link Http2FlowController}，用于控制来自远程端点的{@code DATA}帧的入站流。
+ * </p>
  */
 @UnstableApi
 public interface Http2LocalFlowController extends Http2FlowController {

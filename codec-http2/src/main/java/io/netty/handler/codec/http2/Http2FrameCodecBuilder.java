@@ -141,6 +141,9 @@ public class Http2FrameCodecBuilder extends
 
     /**
      * Build a {@link Http2FrameCodec} object.
+     * <p>
+     *     建立一个{@link Http2FrameCodec}对象。
+     * </p>
      */
     @Override
     public Http2FrameCodec build() {

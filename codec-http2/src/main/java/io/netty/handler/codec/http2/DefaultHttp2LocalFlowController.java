@@ -39,6 +39,12 @@ import io.netty.util.internal.UnstableApi;
  * <p>
  * This class is <strong>NOT</strong> thread safe. The assumption is all methods must be invoked from a single thread.
  * Typically this thread is the event loop thread for the {@link ChannelHandlerContext} managed by this class.
+ * <p>
+ *     Http2LocalFlowController的基本实现。
+ * </p>
+ * <p>
+ * 此类不是线程安全的。 假设所有方法都必须从单个线程中调用。 通常，此线程是此类管理的ChannelHandlerContext的事件循环线程。
+ * </p>
  */
 @UnstableApi
 public class DefaultHttp2LocalFlowController implements Http2LocalFlowController {

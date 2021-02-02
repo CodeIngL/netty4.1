@@ -20,6 +20,9 @@ import io.netty.util.internal.UnstableApi;
 /**
  * An object (used by remote flow control) that is responsible for distributing the bytes to be
  * written across the streams in the connection.
+ * <p>
+ *     一个对象（由远程流控制使用），负责在连接中的流之间分配要写入的字节
+ * </p>
  */
 @UnstableApi
 public interface StreamByteDistributor {

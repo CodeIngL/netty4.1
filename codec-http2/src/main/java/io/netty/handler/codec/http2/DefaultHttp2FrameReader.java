@@ -50,6 +50,9 @@ import static io.netty.handler.codec.http2.Http2FrameTypes.WINDOW_UPDATE;
 
 /**
  * A {@link Http2FrameReader} that supports all frame types defined by the HTTP/2 specification.
+ * <p>
+ *     一个{@link Http2FrameReader} ，它支持HTTP/2规范定义的所有帧类型。
+ * </p>
  */
 @UnstableApi
 public class DefaultHttp2FrameReader implements Http2FrameReader, Http2FrameSizePolicy, Configuration {
@@ -157,6 +160,10 @@ public class DefaultHttp2FrameReader implements Http2FrameReader, Http2FrameSize
                 // case, we don't want to loop around because there may be no more data
                 // available, causing us to exit the loop. Instead, we just want to perform
                 // the first pass at payload processing now.
+                // 标头完成后，进入下一种情况来处理有效负载。
+                // 这是为了确保正确处理零长度有效载荷。
+                // 在这种情况下，我们不想循环，因为可能没有更多可用数据，导致我们退出循环。
+                // 相反，我们只想立即在有效负载处理中执行第一遍。
                 processPayloadState(ctx, input, listener);
                 if (!readingHeaders) {
                     // Wait until the entire payload has arrived.
@@ -416,6 +423,7 @@ public class DefaultHttp2FrameReader implements Http2FrameReader, Http2FrameSize
 
         // Determine how much data there is to read by removing the trailing
         // padding.
+        // 通过删除尾随填充来确定要读取多少数据。
         int dataLength = lengthWithoutTrailingPadding(payloadEndIndex - payload.readerIndex(), padding);
 
         ByteBuf data = payload.readSlice(dataLength);
@@ -618,6 +626,9 @@ public class DefaultHttp2FrameReader implements Http2FrameReader, Http2FrameSize
     /**
      * If padding is present in the payload, reads the next byte as padding. The padding also includes the one byte
      * width of the pad length field. Otherwise, returns zero.
+     * <p>
+     *     如果有效负载中存在填充，请读取下一个字节作为填充。 填充还包括填充长度字段的一个字节宽度。 否则，返回零
+     * </p>
      */
     private int readPadding(ByteBuf payload) {
         if (!flags.paddingPresent()) {

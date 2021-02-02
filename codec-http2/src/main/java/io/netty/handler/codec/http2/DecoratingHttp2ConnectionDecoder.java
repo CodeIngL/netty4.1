@@ -24,6 +24,9 @@ import java.util.List;
 
 /**
  * Decorator around another {@link Http2ConnectionDecoder} instance.
+ * <p>
+ *     另一个{@link Http2ConnectionDecoder}实例周围的装饰器。
+ * </p>
  */
 @UnstableApi
 public class DecoratingHttp2ConnectionDecoder implements Http2ConnectionDecoder {

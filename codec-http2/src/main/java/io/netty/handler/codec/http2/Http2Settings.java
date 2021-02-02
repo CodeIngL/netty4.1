@@ -41,6 +41,15 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
  * Settings for one endpoint in an HTTP/2 connection. Each of the values are optional as defined in
  * the spec for the SETTINGS frame. Permits storage of arbitrary key/value pairs but provides helper
  * methods for standard settings.
+ * <p>
+ *     HTTP/2连接中一个端点的设置。
+ * </p>
+ * <p>
+ *     每个值都是可选的，如SETTINGS框架的规范中所定义。
+ * </p>
+ * <p>
+ *     允许存储任意键/值对，但提供标准设置的辅助方法
+ * </p>
  */
 @UnstableApi
 public final class Http2Settings extends CharObjectHashMap<Long> {

@@ -42,6 +42,9 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
 /**
  * Server-side codec for performing a cleartext upgrade from HTTP/1.x to HTTP/2.
+ * <p>
+ *     服务器端编解码器，用于执行从HTTP/1.x到HTTP/2的明文升级。
+ * </p>
  */
 @UnstableApi
 public class Http2ServerUpgradeCodec implements HttpServerUpgradeHandler.UpgradeCodec {

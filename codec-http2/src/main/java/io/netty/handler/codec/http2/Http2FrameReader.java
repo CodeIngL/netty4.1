@@ -24,6 +24,9 @@ import java.io.Closeable;
 /**
  * Reads HTTP/2 frames from an input {@link ByteBuf} and notifies the specified
  * {@link Http2FrameListener} when frames are complete.
+ * <p>
+ *     从输入ByteBuf读取HTTP/2帧，并在帧完成时通知指定的Http2FrameListener。
+ * </p>
  */
 @UnstableApi
 public interface Http2FrameReader extends Closeable {
