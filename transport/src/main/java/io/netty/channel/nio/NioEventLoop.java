@@ -129,7 +129,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * the select method and the select method will block for that time unless
      * waken up.
      * <p>
-     *     controls的Boolean确定阻塞的Selector.select是否应该突破其select过程。 在我们的例子中，我们使用带超时的select方法，该方法将在这段时间内select阻塞，除非被waken up。
+     *     controls的Boolean确定阻塞的Selector.select是否应该突破其select过程。
+     *     在我们的例子中，我们使用带超时的select方法，该方法将在这段时间内select阻塞，除非被waken up。
      * </p>
      */
     private final AtomicBoolean wakenUp = new AtomicBoolean();
@@ -176,7 +177,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * 包装了一组原始的selector和一组包装的selector
      */
     private static final class SelectorTuple {
+        //未包装的原生的selector
         final Selector unwrappedSelector;
+        //包装的的selector，禁用下和selector一致
         final Selector selector;
 
         SelectorTuple(Selector unwrappedSelector) {
@@ -191,23 +194,24 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     }
 
     /**
-     * 开启selector
+     * 开启selector的。这里可以优化，重建rebuild的时候可以不用
      * @return
      */
     private SelectorTuple openSelector() {
         final Selector unwrappedSelector;
         try {
-            //未被包装的原始的selector
+            //未被包装的原始的selector,用java进行打开
             unwrappedSelector = provider.openSelector();
         } catch (IOException e) {
             throw new ChannelException("failed to open a new selector", e);
         }
 
-        //默认false
+        //默认false,不进行优化
         if (DISABLE_KEY_SET_OPTIMIZATION) {
             return new SelectorTuple(unwrappedSelector);
         }
 
+        //可能的实现类，进行获得
         Object maybeSelectorImplClass = AccessController.doPrivileged(new PrivilegedAction<Object>() {
             @Override
             public Object run() {
@@ -222,7 +226,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             }
         });
 
-        //无法包装
+        //无法包装，使用原生的选择器实现
         if (!(maybeSelectorImplClass instanceof Class) ||
             // ensure the current selector implementation is what we can instrument.
                 // 确保当前的selector实现是我们可以检测的。
@@ -242,9 +246,12 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             @Override
             public Object run() {
                 try {
+                    //获得两个字段之一
                     Field selectedKeysField = selectorImplClass.getDeclaredField("selectedKeys");
+                    //获得两个字段之一
                     Field publicSelectedKeysField = selectorImplClass.getDeclaredField("publicSelectedKeys");
 
+                    //有unsafe，进行优化，直接使用unsafe进行调用
                     if (PlatformDependent.javaVersion() >= 9 && PlatformDependent.hasUnsafe()) {
                         // Let us try to use sun.misc.Unsafe to replace the SelectionKeySet.
                         // This allows us to also do this in Java9+ without any extra flags.
@@ -265,7 +272,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                         // We could not retrieve the offset, lets try reflection as last-resort.
                     }
 
-                    //我们无法检索偏移量，让我们尝试将反射作为最后的手段。
+                    //无法使用unsafe，我们使用反射进进行操作
                     Throwable cause = ReflectionUtil.trySetAccessible(selectedKeysField, true);
                     if (cause != null) {
                         return cause;
@@ -415,13 +422,16 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * 重建Selector
      */
     private void rebuildSelector0() {
+        //老的selector
         final Selector oldSelector = selector;
         final SelectorTuple newSelectorTuple;
 
+        //只有存在selector我们才进行重建
         if (oldSelector == null) {
             return;
         }
 
+        //打开选择键
         try {
             newSelectorTuple = openSelector();
         } catch (Exception e) {
@@ -430,6 +440,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
 
         // Register all channels to the new Selector.
+        // 将所有channels注册到新的选择器。
         int nChannels = 0;
         for (SelectionKey key: oldSelector.keys()) {
             Object a = key.attachment();
@@ -464,6 +475,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
         try {
             // time to close the old selector as everything else is registered to the new one
+            // 是时候关闭旧的selector了，其他都注册到新的selector了
             oldSelector.close();
         } catch (Throwable t) {
             if (logger.isWarnEnabled()) {
@@ -1023,7 +1035,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     private Selector selectRebuildSelector(int selectCnt) throws IOException {
         // The selector returned prematurely many times in a row.
         // Rebuild the selector to work around the problem.
-        //<p>selector连续多次提前返回。 重建选择器以解决问题。
+        //<p>selector连续多次提前返回。 重建Selector以解决问题。
         logger.warn(
                 "Selector.select() returned prematurely {} times in a row; rebuilding Selector {}.",
                 selectCnt, selector);

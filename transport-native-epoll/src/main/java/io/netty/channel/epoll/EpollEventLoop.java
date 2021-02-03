@@ -397,9 +397,11 @@ class EpollEventLoop extends SingleThreadEventLoop {
             final int fd = events.fd(i);
             if (fd == eventFd.intValue()) {
                 // consume wakeup event.
+                // 消耗唤醒事件。
                 Native.eventFdRead(fd);
             } else if (fd == timerFd.intValue()) {
                 // consume wakeup event, necessary because the timer is added with ET mode.
+                // 消耗唤醒事件，这是必需的，因为计时器已添加了ET模式。
                 Native.timerFdRead(fd);
             } else {
                 final long ev = events.events(i);

@@ -37,6 +37,24 @@ import java.nio.ByteBuffer;
  *
  * We use {@code fd} if the {@code epoll_data union} to store the actual file descriptor of an
  * {@link AbstractEpollChannel} and so be able to map it later.
+ *
+ * <p>
+ *     这是一个内部数据结构，可以直接传递给epoll_wait以减少开销。
+ *
+ *     typedef union epoll_data {
+ *          void * ptr;
+ *          int fd;
+ *          uint32_t u32;
+ *          uint64_t u64;
+ *     } epoll_data_t;
+ *     struct epoll_event {
+ *          uint32_t events; // Epoll事件
+ *          epoll_data_t data； //用户数据变量
+ *      };
+ * </p>
+ * <p>
+ *      如果{@code epoll_data union} 用于存储{@link AbstractEpollChannel} 的实际文件描述符，则可以使用fd，因此以后可以对其进行映射。
+ * </p>
  */
 final class EpollEventArray {
     // Size of the epoll_event struct
