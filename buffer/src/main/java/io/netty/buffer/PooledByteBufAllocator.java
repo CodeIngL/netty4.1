@@ -551,7 +551,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
      * threadLocal分配
      */
     final class PoolThreadLocalCache extends FastThreadLocal<PoolThreadCache> {
-        //是否对所有线程都采用cache
+        //是否对所有线程都采用cache，否的话，只能是fastThread
         private final boolean useCacheForAllThreads;
 
         PoolThreadLocalCache(boolean useCacheForAllThreads) {

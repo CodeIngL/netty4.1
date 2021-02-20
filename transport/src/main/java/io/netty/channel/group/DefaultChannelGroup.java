@@ -89,6 +89,11 @@ public class DefaultChannelGroup extends AbstractSet<Channel> implements Channel
      * more than once. Adding channels to a closed group will immediately close them, too. This makes it
      * easy, to shutdown server and child channels at once. Please note that different groups can have
      * the same name, which means no duplicate check is done against group names.
+     * <p>
+     *     创建一个具有指定名称和EventExecutor的新组，以通知ChannelGroupFutures。
+     *     stayClosed定义是否可以多次关闭该组。将频道添加到已关闭的群组也会立即将其关闭。
+     *     这使得立即关闭服务器和子频道变得容易。请注意，不同的组可以使用相同的名称，这意味着不会对组名称进行重复检查
+     * </p>
      */
     public DefaultChannelGroup(String name, EventExecutor executor, boolean stayClosed) {
         if (name == null) {

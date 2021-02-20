@@ -81,7 +81,7 @@ public final class ChannelOutboundBuffer {
 
     /**
      * nio_buffer
-     * 对象池来实现减小的分配
+     * 对象池来实现减小的分配,用于向外输出,默认是1024
      */
     private static final FastThreadLocal<ByteBuffer[]> NIO_BUFFERS = new FastThreadLocal<ByteBuffer[]>() {
         @Override

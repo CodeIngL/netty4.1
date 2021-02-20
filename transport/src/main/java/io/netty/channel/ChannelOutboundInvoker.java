@@ -228,6 +228,7 @@ public interface ChannelOutboundInvoker {
 
     /**
      * Shortcut for call {@link #write(Object, ChannelPromise)} and {@link #flush()}.
+     * 调用{@link #write（Object，ChannelPromise）}和{@link #flush（）}的快捷方式。
      */
     ChannelFuture writeAndFlush(Object msg, ChannelPromise promise);
 

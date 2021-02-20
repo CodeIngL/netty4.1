@@ -251,6 +251,7 @@ public class FastThreadLocal<V> {
 
     /**
      * Returns {@code true} if and only if this thread-local variable is set.
+     * 当且仅当设置了此线程局部变量时，才返回{@code true}。
      */
     public final boolean isSet() {
         return isSet(InternalThreadLocalMap.getIfSet());

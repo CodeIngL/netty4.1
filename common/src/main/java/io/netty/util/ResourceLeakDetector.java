@@ -338,6 +338,7 @@ public class ResourceLeakDetector<T> {
                 continue;
             }
 
+            //存在，说明存在内存泄漏，因为没有被删除。
             String records = ref.toString();
             if (reportedLeaks.putIfAbsent(records, Boolean.TRUE) == null) {
                 if (records.isEmpty()) {
@@ -534,7 +535,7 @@ public class ResourceLeakDetector<T> {
         }
 
         /**
-         *
+         * close将对象从集合中进行删除
          * @param trackedObject
          * @return
          */

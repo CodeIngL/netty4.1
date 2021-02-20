@@ -444,7 +444,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         if (executor.inEventLoop()) {
             final InternalThreadLocalMap threadLocals = InternalThreadLocalMap.get();
             final int stackDepth = threadLocals.futureListenerStackDepth();
-            //最大的栈深度
+            //最大的栈深度,小于最大栈深度才会进行通知的，否则就不会通知
             if (stackDepth < MAX_LISTENER_STACK_DEPTH) {
                 threadLocals.setFutureListenerStackDepth(stackDepth + 1);
                 try {
