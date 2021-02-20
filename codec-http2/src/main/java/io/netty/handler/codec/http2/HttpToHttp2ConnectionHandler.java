@@ -32,6 +32,13 @@ import io.netty.util.internal.UnstableApi;
  * Translates HTTP/1.x object writes into HTTP/2 frames.
  * <p>
  * See {@link InboundHttp2ToHttpAdapter} to get translation from HTTP/2 frames to HTTP/1.x objects.
+ *
+ * <p>
+ *     将HTTP/1.x对象写入转换为HTTP/2帧。
+ * </p>
+ * <p>
+ *     请参阅{@link InboundHttp2ToHttpAdapter} 以获得从HTTP/2框架到HTTP/1.x对象的转换。
+ * </p>
  */
 @UnstableApi
 public class HttpToHttp2ConnectionHandler extends Http2ConnectionHandler {

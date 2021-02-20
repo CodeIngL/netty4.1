@@ -591,6 +591,11 @@ public class DefaultHttp2ConnectionDecoder implements Http2ConnectionDecoder {
          * It is possible that the current call to
          * {@link Http2FrameReader#readFrame(ChannelHandlerContext, ByteBuf, Http2FrameListener)} will have multiple
          * frames to dispatch. So it may be OK for this class to get legitimate frames for the first readFrame.
+         *
+         * <p>
+         *     验证是否已从远程端点接收到HTTP / 2连接前言。
+         *     当前对Http2FrameReader.readFrame（ChannelHandlerContext，ByteBuf，Http2FrameListener）的调用可能要分派多个帧。因此，此类可以为第一个readFrame获取合法帧。
+         * </p>
          */
         private void verifyPrefaceReceived() throws Http2Exception {
             if (!prefaceReceived()) {

@@ -37,6 +37,14 @@ import static io.netty.util.internal.ObjectUtil.checkNotNull;
  * here <a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-16#section-8.1.">HTTP/2 Spec Message Flow</a>.
  * <p>
  * See {@link HttpToHttp2ConnectionHandler} to get translation from HTTP/1.x objects to HTTP/2 frames for writes.
+ *
+ * <p>
+ *     此适配器仅从此处定义的HTTP消息流提供header/data事件，
+ *     即<a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-16#section-8.1.">HTTP/2 Spec消息流。
+ * </p>
+ * <p>
+ *     请参阅{@link HttpToHttp2ConnectionHandler}以将HTTP/1.x对象转换为HTTP/2框架以进行写入。
+ * </p>
  */
 @UnstableApi
 public class InboundHttp2ToHttpAdapter extends Http2EventAdapter {

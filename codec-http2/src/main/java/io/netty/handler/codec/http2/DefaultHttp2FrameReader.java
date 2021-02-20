@@ -60,6 +60,7 @@ public class DefaultHttp2FrameReader implements Http2FrameReader, Http2FrameSize
 
     /**
      * {@code true} = reading headers, {@code false} = reading payload.
+     * {@code true} =读取头部，{@code false} =读取有效负载。
      */
     private boolean readingHeaders = true;
     /**
@@ -145,9 +146,11 @@ public class DefaultHttp2FrameReader implements Http2FrameReader, Http2FrameSize
             input.skipBytes(input.readableBytes());
             return;
         }
+        //尽量读取相关帧
         try {
             do {
                 if (readingHeaders) {
+                    //处理头部状态
                     processHeaderState(input);
                     if (readingHeaders) {
                         // Wait until the entire header has arrived.
@@ -183,24 +186,32 @@ public class DefaultHttp2FrameReader implements Http2FrameReader, Http2FrameSize
     }
 
     private void processHeaderState(ByteBuf in) throws Http2Exception {
+        //buffer不够
         if (in.readableBytes() < FRAME_HEADER_LENGTH) {
             // Wait until the entire frame header has been read.
             return;
         }
 
         // Read the header and prepare the unmarshaller to read the frame.
+        // 阅读header并准备解组器以阅读框架。
+        // 负载长度24位，3个字节
         payloadLength = in.readUnsignedMedium();
         if (payloadLength > maxFrameSize) {
             throw connectionError(FRAME_SIZE_ERROR, "Frame length: %d exceeds maximum: %d", payloadLength,
                                   maxFrameSize);
         }
+        //帧类型
         frameType = in.readByte();
+        //flag
         flags = new Http2Flags(in.readUnsignedByte());
+        //streamId
         streamId = readUnsignedInt(in);
 
         // We have consumed the data, next time we read we will be expecting to read the frame payload.
+        // 我们已经消耗了数据，下次读取时将期望读取帧有效负载。
         readingHeaders = false;
 
+        //帧类型
         switch (frameType) {
             case DATA:
                 verifyDataFrame();

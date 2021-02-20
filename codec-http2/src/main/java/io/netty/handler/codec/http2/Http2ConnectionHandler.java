@@ -218,6 +218,9 @@ public class Http2ConnectionHandler extends ByteToMessageDecoder implements Http
         }
     }
 
+    /**
+     * 基本的decoder
+     */
     private abstract class BaseDecoder {
         public abstract void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception;
         public void handlerRemoved(ChannelHandlerContext ctx) throws Exception { }
@@ -307,6 +310,10 @@ public class Http2ConnectionHandler extends ByteToMessageDecoder implements Http
         /**
          * Decodes the client connection preface string from the input buffer.
          *
+         * <p>
+         *     从输入缓冲区解码客户端连接前言字符串。
+         * </p>
+         *
          * @return {@code true} if processing of the client preface string is complete. Since client preface strings can
          *         only be received by servers, returns true immediately for client endpoints.
          */
@@ -348,6 +355,10 @@ public class Http2ConnectionHandler extends ByteToMessageDecoder implements Http
 
         /**
          * Peeks at that the next frame in the buffer and verifies that it is a non-ack {@code SETTINGS} frame.
+         *
+         * <p>
+         *     窥视缓冲区中的下一帧，并验证它是否为非确认{@code SETTINGS}帧。
+         * </p>
          *
          * @param in the inbound buffer.
          * @return {@code} true if the next frame is a non-ack {@code SETTINGS} frame, {@code false} if more
@@ -400,7 +411,7 @@ public class Http2ConnectionHandler extends ByteToMessageDecoder implements Http
     }
 
     /**
-     * 帧decode
+     * http帧decode
      */
     private final class FrameDecoder extends BaseDecoder {
         @Override
