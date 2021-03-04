@@ -1341,6 +1341,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
      */
     final class HeadContext extends AbstractChannelHandlerContext implements ChannelOutboundHandler, ChannelInboundHandler {
 
+        //不安全操作
         private final Unsafe unsafe;
 
         HeadContext(DefaultChannelPipeline pipeline) {

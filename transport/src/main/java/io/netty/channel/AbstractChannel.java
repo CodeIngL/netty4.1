@@ -138,6 +138,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         return buf != null && buf.isWritable();
     }
 
+    //返回可以写的字节，当不可用的时候将返回0
     @Override
     public long bytesBeforeUnwritable() {
         ChannelOutboundBuffer buf = unsafe.outboundBuffer();

@@ -173,7 +173,7 @@ public abstract class DefaultMaxMessagesRecvByteBufAllocator implements MaxMessa
         }
 
         /**
-         * 获得的阅读的数据
+         * 获得的阅读的数据，总共的数据
          * @return
          */
         protected final int totalBytesRead() {

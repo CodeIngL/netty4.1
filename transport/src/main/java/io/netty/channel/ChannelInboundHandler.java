@@ -18,6 +18,9 @@ package io.netty.channel;
 /**
  * {@link ChannelHandler} which adds callbacks for state changes. This allows the user
  * to hook in to state changes easily.
+ *
+ * ChannelHandler，它为状态更改添加回调。这使用户可以轻松加入状态更改。
+ *
  */
 public interface ChannelInboundHandler extends ChannelHandler {
 
@@ -63,6 +66,8 @@ public interface ChannelInboundHandler extends ChannelHandler {
     /**
      * Gets called once the writable state of a {@link Channel} changed. You can check the state with
      * {@link Channel#isWritable()}.
+     *
+     * {@link Channel}的可写状态更改后被调用。您可以使用{@link Channel#isWritable()}检查状态。
      */
     void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception;
 

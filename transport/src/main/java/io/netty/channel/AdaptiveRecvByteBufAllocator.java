@@ -175,7 +175,7 @@ public class AdaptiveRecvByteBufAllocator extends DefaultMaxMessagesRecvByteBufA
                     decreaseNow = true;
                 }
             } else if (actualReadBytes >= nextReceiveBufferSize) { //如果大于，尝试调高
-                index = min(index + INDEX_INCREMENT, maxIndex);
+                index = min(index + INDEX_INCREMENT, maxIndex);//增加直接上4
                 nextReceiveBufferSize = SIZE_TABLE[index];
                 //避免每一次的相减的操作
                 decreaseNow = false;

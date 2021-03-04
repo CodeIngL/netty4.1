@@ -112,6 +112,7 @@ public final class ChannelOutboundBuffer {
 
     private boolean inFail;
 
+    //等待写的大小
     private static final AtomicLongFieldUpdater<ChannelOutboundBuffer> TOTAL_PENDING_SIZE_UPDATER =
             AtomicLongFieldUpdater.newUpdater(ChannelOutboundBuffer.class, "totalPendingSize");
 
@@ -181,7 +182,7 @@ public final class ChannelOutboundBuffer {
         Entry entry = unflushedEntry;
         if (entry != null) {
             if (flushedEntry == null) {
-                // there is no flushedEntry yet, so start with the entry
+                // there is no flushedEntry yet, so start with the entry 还没有flushedEntry，所以从条目开始
                 flushedEntry = entry;
             }
             do {

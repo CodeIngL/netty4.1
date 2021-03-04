@@ -85,7 +85,9 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
      */
     private static final int INIT = 0;
 
+    //管道
     private final DefaultChannelPipeline pipeline;
+    //名字
     private final String name;
     private final boolean ordered;
     //支持的方法的掩码
@@ -709,8 +711,10 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
     @Override
     public ChannelHandlerContext read() {
         final AbstractChannelHandlerContext next = findContextOutbound(MASK_READ);
+        //事件执行器
         EventExecutor executor = next.executor();
         if (executor.inEventLoop()) {
+            //直接执行
             next.invokeRead();
         } else {
             Tasks tasks = next.invokeTasks;
@@ -723,6 +727,9 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return this;
     }
 
+    /**
+     * 进行read
+     */
     private void invokeRead() {
         if (invokeHandler()) {
             try {
@@ -979,6 +986,11 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return ctx;
     }
 
+    /**
+     * 向前选择
+     * @param mask
+     * @return
+     */
     private AbstractChannelHandlerContext findContextOutbound(int mask) {
         AbstractChannelHandlerContext ctx = this;
         do {
