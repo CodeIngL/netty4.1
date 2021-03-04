@@ -267,6 +267,10 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     /**
      * Set the number of reads after which {@link ByteBuf#discardSomeReadBytes()} are called and so free up memory.
      * The default is {@code 16}.
+     *
+     * <p>
+     *     设置读取次数，在此之后调用{@link ByteBuf#discardSomeReadBytes()}，从而释放内存。默认值为{@code 16}。
+     * </p>
      */
     public void setDiscardAfterReads(int discardAfterReads) {
         checkPositive(discardAfterReads, "discardAfterReads");
@@ -395,6 +399,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
     /**
      * Get {@code numElements} out of the {@link CodecOutputList} and forward these through the pipeline.
+     * 从{@link CodecOutputList}中获取{@code numElements}，并将其通过管道转发。
      */
     static void fireChannelRead(ChannelHandlerContext ctx, CodecOutputList msgs, int numElements) {
         for (int i = 0; i < numElements; i++) {

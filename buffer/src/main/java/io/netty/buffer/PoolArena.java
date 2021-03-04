@@ -35,6 +35,8 @@ import static java.lang.Math.max;
  * @param <T>
  */
 abstract class PoolArena<T> implements PoolArenaMetric {
+
+    //是否存在unsafe对象
     static final boolean HAS_UNSAFE = PlatformDependent.hasUnsafe();
 
     /**
@@ -89,7 +91,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     private final LongCounter allocationsSmall = PlatformDependent.newLongCounter();
     //计数维护huge
     private final LongCounter allocationsHuge = PlatformDependent.newLongCounter();
-    //
+    //大内存计数，统计大内存，查看性能
     private final LongCounter activeBytesHuge = PlatformDependent.newLongCounter();
 
     private long deallocationsTiny;
@@ -999,8 +1001,10 @@ abstract class PoolArena<T> implements PoolArenaMetric {
         @Override
         protected void destroyChunk(PoolChunk<ByteBuffer> chunk) {
             if (PlatformDependent.useDirectBufferNoCleaner()) {
+                //不存在cleaner 使用不存在cleaner的方法
                 PlatformDependent.freeDirectNoCleaner(chunk.memory);
             } else {
+                //使用cleaner的方法
                 PlatformDependent.freeDirectBuffer(chunk.memory);
             }
         }

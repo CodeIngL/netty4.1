@@ -57,6 +57,7 @@ final class CodecOutputList extends AbstractList<Object> implements RandomAccess
      * 特殊的的二维表
      */
     private static final class CodecOutputLists implements CodecOutputListRecycler {
+        //内部表
         private final CodecOutputList[] elements;
         private final int mask;
 
